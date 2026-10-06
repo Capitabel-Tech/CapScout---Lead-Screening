@@ -30,6 +30,17 @@
         "dev"
       ],
       "port": 5173
+    },
+    {
+      "name": "demo",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "frontend",
+        "run",
+        "dev:demo"
+      ],
+      "port": 5174
     }
   ]
 }

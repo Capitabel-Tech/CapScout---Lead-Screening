@@ -32,6 +32,11 @@ export default function Login() {
         <div style={{ fontSize: 24, fontWeight: 700, marginTop: 2 }}>Sign in</div>
       </div>
       <div className="scroll" style={{ paddingTop: 20 }}>
+        {import.meta.env.VITE_DEMO === 'true' && (
+          <div style={{ fontSize: 13, lineHeight: 1.4, color: "var(--muted)" }}>
+            Demo version with sample data. Type any employee code and password to continue.
+          </div>
+        )}
         <div>
           <label className="lbl" htmlFor="l-code">
             Employee code

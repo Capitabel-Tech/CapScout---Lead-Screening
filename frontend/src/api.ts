@@ -12,7 +12,19 @@ export class ApiError extends Error {
   }
 }
 
+const DEMO = import.meta.env.VITE_DEMO === 'true'
+
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+  if (DEMO) {
+    // Demo build: answers come from sample data in the browser (no server).
+    const { demoApi, DemoHttpError } = await import('./demo/mockApi')
+    try {
+      return await demoApi<T>(path, init)
+    } catch (e) {
+      if (e instanceof DemoHttpError) throw new ApiError(e.status, e.detail)
+      throw e
+    }
+  }
   let res: Response
   try {
     res = await fetch(`/api${path}`, {

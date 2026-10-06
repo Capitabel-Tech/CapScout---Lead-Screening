@@ -1,0 +1,710 @@
+{
+  "version": 1,
+  "source": "Capitabel_MSME_Lead_Screening_Tracker.xlsx",
+  "sections": [
+    {
+      "key": "lead",
+      "label": "Lead & source",
+      "display_order": 1
+    },
+    {
+      "key": "business",
+      "label": "Business & loan need",
+      "display_order": 2
+    },
+    {
+      "key": "money",
+      "label": "Financials & documents",
+      "display_order": 3
+    },
+    {
+      "key": "property",
+      "label": "Property & credit flags",
+      "display_order": 4
+    },
+    {
+      "key": "assess",
+      "label": "Screening assessment",
+      "display_order": 5
+    },
+    {
+      "key": "decide",
+      "label": "Recommendation & next action",
+      "display_order": 6
+    }
+  ],
+  "fields": [
+    {
+      "key": "lead_id",
+      "label": "Lead ID",
+      "excel_column": "A",
+      "position": 1,
+      "field_type": "system",
+      "options": null,
+      "unit": null,
+      "section": "lead",
+      "display_order": 1,
+      "counts_toward_progress": false,
+      "system_source": "application_ref"
+    },
+    {
+      "key": "date",
+      "label": "Date",
+      "excel_column": "B",
+      "position": 2,
+      "field_type": "system",
+      "options": null,
+      "unit": null,
+      "section": "lead",
+      "display_order": 2,
+      "counts_toward_progress": false,
+      "system_source": "meeting_date"
+    },
+    {
+      "key": "sm_name",
+      "label": "SM Name",
+      "excel_column": "C",
+      "position": 3,
+      "field_type": "system",
+      "options": null,
+      "unit": null,
+      "section": "lead",
+      "display_order": 3,
+      "counts_toward_progress": false,
+      "system_source": "staff_name"
+    },
+    {
+      "key": "source_type",
+      "label": "Source Type",
+      "excel_column": "D",
+      "position": 4,
+      "field_type": "single_select",
+      "options": [
+        "Auditor/CA",
+        "DSA",
+        "Connector",
+        "Direct",
+        "Other"
+      ],
+      "unit": null,
+      "section": "lead",
+      "display_order": 4,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "source_name",
+      "label": "Source Name",
+      "excel_column": "E",
+      "position": 5,
+      "field_type": "text",
+      "options": null,
+      "unit": null,
+      "section": "lead",
+      "display_order": 5,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "source_contact",
+      "label": "Source Contact",
+      "excel_column": "F",
+      "position": 6,
+      "field_type": "text",
+      "options": null,
+      "unit": null,
+      "section": "lead",
+      "display_order": 6,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "business_name",
+      "label": "Business Name",
+      "excel_column": "G",
+      "position": 7,
+      "field_type": "text",
+      "options": null,
+      "unit": null,
+      "section": "lead",
+      "display_order": 7,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "promoter",
+      "label": "Promoter",
+      "excel_column": "H",
+      "position": 8,
+      "field_type": "text",
+      "options": null,
+      "unit": null,
+      "section": "lead",
+      "display_order": 8,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "mobile",
+      "label": "Mobile",
+      "excel_column": "I",
+      "position": 9,
+      "field_type": "phone",
+      "options": null,
+      "unit": null,
+      "section": "lead",
+      "display_order": 9,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "location",
+      "label": "Location",
+      "excel_column": "J",
+      "position": 10,
+      "field_type": "text",
+      "options": null,
+      "unit": null,
+      "section": "lead",
+      "display_order": 10,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "constitution",
+      "label": "Constitution",
+      "excel_column": "K",
+      "position": 11,
+      "field_type": "single_select",
+      "options": [
+        "Proprietorship",
+        "Partnership",
+        "LLP",
+        "Pvt Ltd",
+        "Ltd"
+      ],
+      "unit": null,
+      "section": "business",
+      "display_order": 1,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "industry",
+      "label": "Industry",
+      "excel_column": "L",
+      "position": 12,
+      "field_type": "text",
+      "options": null,
+      "unit": null,
+      "section": "business",
+      "display_order": 2,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "vintage_years",
+      "label": "Vintage (Years)",
+      "excel_column": "M",
+      "position": 13,
+      "field_type": "number",
+      "options": null,
+      "unit": "Years",
+      "section": "business",
+      "display_order": 3,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "loan_required",
+      "label": "Loan Required (₹L)",
+      "excel_column": "N",
+      "position": 14,
+      "field_type": "number",
+      "options": null,
+      "unit": "₹L",
+      "section": "business",
+      "display_order": 4,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "purpose",
+      "label": "Purpose",
+      "excel_column": "O",
+      "position": 15,
+      "field_type": "single_select",
+      "options": [
+        "Working Capital",
+        "Expansion",
+        "Capex",
+        "LAP",
+        "Business Loan",
+        "Other"
+      ],
+      "unit": null,
+      "section": "business",
+      "display_order": 5,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "urgency",
+      "label": "Urgency",
+      "excel_column": "P",
+      "position": 16,
+      "field_type": "single_select",
+      "options": [
+        "Immediate",
+        "<30 days",
+        "30-60 days",
+        "Flexible"
+      ],
+      "unit": null,
+      "section": "business",
+      "display_order": 6,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "secured_unsecured",
+      "label": "Secured/Unsecured",
+      "excel_column": "Q",
+      "position": 17,
+      "field_type": "single_select",
+      "options": [
+        "Secured",
+        "Unsecured",
+        "Open to both"
+      ],
+      "unit": null,
+      "section": "business",
+      "display_order": 7,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "annual_turnover",
+      "label": "Annual Turnover (₹L)",
+      "excel_column": "R",
+      "position": 18,
+      "field_type": "number",
+      "options": null,
+      "unit": "₹L",
+      "section": "money",
+      "display_order": 1,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "monthly_banking",
+      "label": "Monthly Banking (₹L)",
+      "excel_column": "S",
+      "position": 19,
+      "field_type": "number",
+      "options": null,
+      "unit": "₹L",
+      "section": "money",
+      "display_order": 2,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "monthly_surplus",
+      "label": "Monthly Surplus (₹L)",
+      "excel_column": "T",
+      "position": 20,
+      "field_type": "number",
+      "options": null,
+      "unit": "₹L",
+      "section": "money",
+      "display_order": 3,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "existing_debt",
+      "label": "Existing Debt (₹L)",
+      "excel_column": "U",
+      "position": 21,
+      "field_type": "number",
+      "options": null,
+      "unit": "₹L",
+      "section": "money",
+      "display_order": 4,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "monthly_emi",
+      "label": "Monthly EMI (₹L)",
+      "excel_column": "V",
+      "position": 22,
+      "field_type": "number",
+      "options": null,
+      "unit": "₹L",
+      "section": "money",
+      "display_order": 5,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "gst_available",
+      "label": "GST Available",
+      "excel_column": "W",
+      "position": 23,
+      "field_type": "single_select",
+      "options": [
+        "Yes",
+        "No",
+        "Unknown"
+      ],
+      "unit": null,
+      "section": "money",
+      "display_order": 6,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "itr_financials",
+      "label": "ITR/Financials",
+      "excel_column": "X",
+      "position": 24,
+      "field_type": "single_select",
+      "options": [
+        "Yes",
+        "No",
+        "Unknown"
+      ],
+      "unit": null,
+      "section": "money",
+      "display_order": 7,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "bank_statements",
+      "label": "Bank Statements",
+      "excel_column": "Y",
+      "position": 25,
+      "field_type": "single_select",
+      "options": [
+        "Yes",
+        "No",
+        "Unknown"
+      ],
+      "unit": null,
+      "section": "money",
+      "display_order": 8,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "property_available",
+      "label": "Property Available",
+      "excel_column": "Z",
+      "position": 26,
+      "field_type": "single_select",
+      "options": [
+        "Yes",
+        "No",
+        "Unknown"
+      ],
+      "unit": null,
+      "section": "property",
+      "display_order": 1,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "property_value",
+      "label": "Property Value (₹L)",
+      "excel_column": "AA",
+      "position": 27,
+      "field_type": "number",
+      "options": null,
+      "unit": "₹L",
+      "section": "property",
+      "display_order": 2,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "existing_mortgage",
+      "label": "Existing Mortgage",
+      "excel_column": "AB",
+      "position": 28,
+      "field_type": "single_select",
+      "options": [
+        "Yes",
+        "No",
+        "Unknown"
+      ],
+      "unit": null,
+      "section": "property",
+      "display_order": 3,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "overdue",
+      "label": "Overdue",
+      "excel_column": "AC",
+      "position": 29,
+      "field_type": "single_select",
+      "options": [
+        "Yes",
+        "No",
+        "Unknown"
+      ],
+      "unit": null,
+      "section": "property",
+      "display_order": 4,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "bounces",
+      "label": "Bounces",
+      "excel_column": "AD",
+      "position": 30,
+      "field_type": "single_select",
+      "options": [
+        "Yes",
+        "No",
+        "Unknown"
+      ],
+      "unit": null,
+      "section": "property",
+      "display_order": 5,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "settlement_write_off",
+      "label": "Settlement/Write-off",
+      "excel_column": "AE",
+      "position": 31,
+      "field_type": "single_select",
+      "options": [
+        "Yes",
+        "No",
+        "Unknown"
+      ],
+      "unit": null,
+      "section": "property",
+      "display_order": 6,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "litigation_dispute",
+      "label": "Litigation/Dispute",
+      "excel_column": "AF",
+      "position": 32,
+      "field_type": "text",
+      "options": null,
+      "unit": null,
+      "section": "property",
+      "display_order": 7,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "documents_readiness",
+      "label": "Documents Readiness",
+      "excel_column": "AG",
+      "position": 33,
+      "field_type": "single_select",
+      "options": [
+        "Ready",
+        "Partial",
+        "Weak"
+      ],
+      "unit": null,
+      "section": "assess",
+      "display_order": 1,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "business_quality",
+      "label": "Business Quality",
+      "excel_column": "AH",
+      "position": 34,
+      "field_type": "single_select",
+      "options": [
+        "Strong",
+        "Average",
+        "Weak"
+      ],
+      "unit": null,
+      "section": "assess",
+      "display_order": 2,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "banking_quality",
+      "label": "Banking Quality",
+      "excel_column": "AI",
+      "position": 35,
+      "field_type": "single_select",
+      "options": [
+        "Strong",
+        "Average",
+        "Weak",
+        "Unknown"
+      ],
+      "unit": null,
+      "section": "assess",
+      "display_order": 3,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "credit_risk",
+      "label": "Credit Risk",
+      "excel_column": "AJ",
+      "position": 36,
+      "field_type": "single_select",
+      "options": [
+        "None known",
+        "Manageable",
+        "Significant"
+      ],
+      "unit": null,
+      "section": "assess",
+      "display_order": 4,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "opportunity_grade",
+      "label": "Opportunity Grade",
+      "excel_column": "AK",
+      "position": 37,
+      "field_type": "single_select",
+      "options": [
+        "A – Priority",
+        "B – Develop",
+        "C – Selective",
+        "D – Reject"
+      ],
+      "unit": null,
+      "section": "assess",
+      "display_order": 5,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "likely_product",
+      "label": "Likely Product",
+      "excel_column": "AL",
+      "position": 38,
+      "field_type": "single_select",
+      "options": [
+        "LAP",
+        "Business Loan",
+        "Working Capital",
+        "Other"
+      ],
+      "unit": null,
+      "section": "assess",
+      "display_order": 6,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "potential_lender",
+      "label": "Potential Lender",
+      "excel_column": "AM",
+      "position": 39,
+      "field_type": "text",
+      "options": null,
+      "unit": null,
+      "section": "assess",
+      "display_order": 7,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "sm_recommendation",
+      "label": "SM Recommendation",
+      "excel_column": "AN",
+      "position": 40,
+      "field_type": "single_select",
+      "options": [
+        "Proceed",
+        "Hold",
+        "Reject"
+      ],
+      "unit": null,
+      "section": "decide",
+      "display_order": 1,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "next_action",
+      "label": "Next Action",
+      "excel_column": "AO",
+      "position": 41,
+      "field_type": "single_select",
+      "options": [
+        "New",
+        "Qualified",
+        "Documents Pending",
+        "Lender Matching",
+        "Login",
+        "Sanction",
+        "Disbursed",
+        "Dropped"
+      ],
+      "unit": null,
+      "section": "decide",
+      "display_order": 3,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "next_action_date",
+      "label": "Next Action Date",
+      "excel_column": "AP",
+      "position": 42,
+      "field_type": "date",
+      "options": null,
+      "unit": null,
+      "section": "decide",
+      "display_order": 4,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "status",
+      "label": "Status",
+      "excel_column": "AQ",
+      "position": 43,
+      "field_type": "text",
+      "options": null,
+      "unit": null,
+      "section": "decide",
+      "display_order": 2,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "reason_comments",
+      "label": "Reason/Comments",
+      "excel_column": "AR",
+      "position": 44,
+      "field_type": "long_text",
+      "options": null,
+      "unit": null,
+      "section": "decide",
+      "display_order": 5,
+      "counts_toward_progress": true,
+      "system_source": null
+    }
+  ]
+}
