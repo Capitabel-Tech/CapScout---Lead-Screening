@@ -257,11 +257,11 @@ class ConvertIn(BaseModel):
 async def _zoho_form_fields():
     cfg = get_settings()
     if not cfg.zoho_mcp_url:
-        raise HTTPException(status_code=503, detail="Zoho is not connected to this app yet.")
+        raise HTTPException(status_code=503, detail="The Lead form is not available yet. Please tell your admin.")
     try:
         return await leadform.load_lead_fields(cfg)
     except Exception as e:  # noqa: BLE001 - tell the app plainly instead of a server error
-        raise HTTPException(status_code=503, detail=f"Could not load the Zoho Lead form: {e}"[:300]) from None
+        raise HTTPException(status_code=503, detail=f"Could not load the Lead form: {e}"[:300]) from None
 
 
 def _db_mapping(db) -> dict[str, str]:

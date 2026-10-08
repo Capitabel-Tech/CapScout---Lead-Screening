@@ -92,7 +92,7 @@ type DCustomer = {
 
 type Db = { v: 1; next_ref: number; signed_in: boolean; customers: DCustomer[] }
 
-const KEY = 'capscout-demo-db-v1'
+const KEY = 'capscout-demo-db-v2' // bumped when the sample data changed, so old browsers get the new data
 let db: Db | null = null
 
 const uid = () =>
@@ -316,6 +316,13 @@ function seed(): Db {
   annapurna.status = 'CONVERTED'
   annapurna.zoho_lead_id = '1236291000001101009'
   annapurna.converted_at = hoursAgo(49).toISOString()
+
+  // The demo starts with every sample customer already a Lead (the Meetings tab is empty).
+  customers.forEach((c, i) => {
+    c.status = 'CONVERTED'
+    c.zoho_lead_id ??= `12362910000011${String(c.ref_no).padStart(5, '0')}`
+    c.converted_at ??= hoursAgo(10 + i).toISOString()
+  })
 
   return { v: 1, next_ref: 12, signed_in: false, customers: customers.map((c) => ({ ...c, created_ms: Math.min(c.created_ms, now) })) }
 }

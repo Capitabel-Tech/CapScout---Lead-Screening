@@ -109,7 +109,7 @@ export default function Home() {
             <div style={{ fontSize: 24, fontWeight: 700, marginTop: 2 }}>My customers</div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <div className={`hdr-pill ${syncPill.cls}`} title="Zoho sync">
+            <div className={`hdr-pill ${syncPill.cls}`} title="Sync status">
               <IconCloud /> {syncPill.text}
             </div>
             <button
@@ -186,7 +186,7 @@ export default function Home() {
           <EmptyState
             text={
               tab === 'converted'
-                ? 'Leads show up here once a prospect is pushed to Zoho.'
+                ? 'Customers you recommend as Proceed show up here as Leads.'
                 : kind === 'customer'
                   ? 'No meetings yet. Tap “New meeting” to add your first one.'
                   : `No ${kind} meetings yet. Tap “New meeting” to add one.`

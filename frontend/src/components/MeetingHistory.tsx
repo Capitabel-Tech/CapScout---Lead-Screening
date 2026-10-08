@@ -7,11 +7,11 @@ import { mapsUrl } from '../gps'
 import { friendlyZohoError } from '../zohoErrors'
 
 const SYNC: Record<SyncStatus, { label: string; cls: string }> = {
-  NOT_QUEUED: { label: 'Zoho: not queued', cls: '' },
-  PENDING: { label: 'Zoho: pending', cls: 'warn' },
-  SYNCING: { label: 'Zoho: syncing…', cls: 'warn' },
-  SYNCED: { label: 'Zoho ✓', cls: 'good' },
-  FAILED: { label: 'Zoho ✕', cls: 'bad' },
+  NOT_QUEUED: { label: 'Not sent', cls: '' },
+  PENDING: { label: 'Sending…', cls: 'warn' },
+  SYNCING: { label: 'Sending…', cls: 'warn' },
+  SYNCED: { label: 'Synced ✓', cls: 'good' },
+  FAILED: { label: 'Not sent ✕', cls: 'bad' },
 }
 
 export default function MeetingHistory({ customerId, reloadKey }: { customerId: string; reloadKey?: unknown }) {

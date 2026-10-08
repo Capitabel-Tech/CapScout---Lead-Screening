@@ -65,10 +65,8 @@ a {
 /* The phone frame. On phones it is the whole screen. */
 .app {
   width: 390px;
-  /* A phone-sized frame, but never taller than the browser window (otherwise the top, with the
-     logo, is cut off on shorter screens). */
-  height: min(844px, calc(100vh - 24px));
-  height: min(844px, calc(100dvh - 24px));
+  height: 844px;
+  zoom: var(--fit, 1); /* shrinks evenly on short windows, see main.tsx */
   background: var(--ground);
   display: flex;
   flex-direction: column;
@@ -87,6 +85,7 @@ a {
   }
   .app {
     width: 100%;
+    zoom: 1;
     height: 100dvh;
     border-radius: 0;
     box-shadow: none;
@@ -773,4 +772,47 @@ a {
 .logo.big .logo-sub {
   margin-top: 6px;
   font-size: 14px;
+}
+
+/* "Type of meeting" cards: an icon on the left, the title and a short line on the right. */
+.mtype {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 16px;
+  text-align: left;
+  border: 1.5px solid #e1e6ec;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: var(--shadow-md);
+  color: var(--ink);
+  transition: background 0.15s, border-color 0.15s;
+}
+.mtype:hover,
+.mtype:active,
+.mtype:focus-visible {
+  background: #eef4fc;
+  border-color: #b9d0ec;
+  outline: none;
+}
+.mtype-icon {
+  flex: none;
+  display: flex;
+}
+.mtype-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.mtype-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.mtype-hint {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--muted);
 }

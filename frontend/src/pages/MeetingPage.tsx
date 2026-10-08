@@ -446,7 +446,7 @@ function PropertyStep({ field }: { field: F }) {
       <div className="h">Property</div>
       {unsecured && (
         <div role="status" style={{ padding: '8px 12px', borderRadius: 10, background: '#EEF1F4', color: 'var(--navy)', fontSize: 13, fontWeight: 600 }}>
-          Unsecured loan: property details are not needed.
+          Property details are not required for unsecured loans.
         </div>
       )}
       <div className="card">
@@ -585,7 +585,7 @@ function DecideStep({ field, proceedToLead }: { field: F; proceedToLead: boolean
             role="status"
             style={{ marginTop: 8, padding: '8px 12px', borderRadius: 10, background: '#E3F1E9', color: 'var(--good)', fontSize: 13, fontWeight: 600 }}
           >
-            Proceed: when you save, this prospect is pushed to Zoho as a Lead.
+            Proceed: when you save, this prospect is converted to a Lead.
           </div>
         )}
       </div>
@@ -920,11 +920,11 @@ function SaveFooter({
         <div className="sheet-bg" role="dialog" aria-modal="true" aria-labelledby="lead-title">
           <div className="sheet">
             <div className="sheet-title" id="lead-title">
-              Push this prospect to Leads?
+              Are you sure you want to convert this prospect to a Lead?
             </div>
             <div className="muted" style={{ fontSize: 14 }}>
-              You recommended this prospect as <strong>Proceed</strong>. When you save, this meeting is saved and the
-              prospect is pushed to Zoho as a Lead.
+              You recommended this prospect as <strong>Proceed</strong>. If you continue, this meeting is saved and the
+              prospect becomes a Lead.
             </div>
             <button
               className="btn primary"
@@ -933,7 +933,7 @@ function SaveFooter({
                 void save()
               }}
             >
-              Yes, save
+              Yes, continue
             </button>
             <button className="btn ghost" onClick={() => setConfirmLead(false)}>
               Cancel
@@ -1116,7 +1116,7 @@ function DoneScreen({ saved, values }: { saved: Saved; values: Record<string, st
           {meeting.sequence_no === 1 ? 'Lead saved' : 'Meeting saved'}
         </div>
         <div className="mono" style={{ fontSize: 14, color: 'var(--muted)' }}>
-          {saved.leadRef} · Meeting #{meeting.sequence_no} · Zoho sync pending
+          {saved.leadRef} · Meeting #{meeting.sequence_no} · Sync pending
         </div>
       </div>
       <div className="card" style={{ padding: '4px 16px' }}>

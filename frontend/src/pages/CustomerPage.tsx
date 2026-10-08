@@ -106,7 +106,7 @@ export default function CustomerPage() {
               )}
               {c.zoho_lead_id && (
                 <div className="mono" style={{ fontSize: 13, color: 'var(--good)', fontWeight: 600 }}>
-                  Zoho Lead ID: {c.zoho_lead_id}
+                  Lead ID: {c.zoho_lead_id}
                 </div>
               )}
               {/* Percentage by default; tap for "32 / 41 completed". */}
@@ -226,7 +226,7 @@ function ConversionPanel({
             then move to Leads.
           </div>
         ) : (
-          <div style={{ fontSize: 13, color: 'var(--muted)' }}>Sending to Zoho CRM. This usually takes a few seconds.</div>
+          <div style={{ fontSize: 13, color: 'var(--muted)' }}>Saving as a Lead. This usually takes a few seconds.</div>
         )}
         {c.lead_sync_status === 'FAILED' && c.lead_sync_error && (
           <div style={{ fontSize: 12, color: 'var(--warn)', fontWeight: 600 }}>

@@ -37,7 +37,7 @@ export default function ConvertPage() {
             ? e.detail
             : e instanceof ApiError && e.status === 404
               ? 'Lead not found.'
-              : 'Could not load the Zoho Lead form.',
+              : 'Could not load the Lead form.',
         ),
       )
   }, [id, isNew])
@@ -122,17 +122,17 @@ export default function ConvertPage() {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 17, fontWeight: 700 }}>{isNew ? 'New lead' : 'Convert to Lead'}</div>
           <div className="mono" style={{ fontSize: 12, color: 'var(--muted)' }}>
-            {form && form.customer ? `${form.customer.lead_ref} · ${form.customer.name ?? ''}` : 'Zoho Lead form'}
+            {form && form.customer ? `${form.customer.lead_ref} · ${form.customer.name ?? ''}` : 'Lead form'}
           </div>
         </div>
       </div>
 
       <div className="scroll">
-        {!form && !loadError && <div className="empty">Loading your Zoho Lead form…</div>}
+        {!form && !loadError && <div className="empty">Loading the Lead form…</div>}
 
         {loadError && (
           <div className="card" style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--warn)' }}>Could not load the Zoho Lead form</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--warn)' }}>Could not load the Lead form</div>
             <div style={{ fontSize: 13, color: 'var(--muted)' }}>{loadError}</div>
             <button className="btn ghost" style={{ height: 46 }} onClick={reload}>
               Try again
@@ -151,8 +151,8 @@ export default function ConvertPage() {
               </div>
               <div style={{ fontSize: 13, color: 'var(--ink)' }}>
                 {form.customer
-                  ? 'This will create the Lead in Zoho CRM with the details below. They are the fields of your Zoho Lead form. Check them and change anything that is wrong. All meetings stay with this lead.'
-                  : 'Fill in the Lead details below. They are the fields of your Zoho Lead form. The Lead is created in Zoho CRM when you save.'}
+                  ? 'This will create the Lead with the details below. Check them and change anything that is wrong. All meetings stay with this lead.'
+                  : 'Fill in the Lead details below. The Lead is created when you save.'}
               </div>
               {form.customer && (
                 <div style={{ fontSize: 12, color: 'var(--muted)' }}>
