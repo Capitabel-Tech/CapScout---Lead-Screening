@@ -11,7 +11,7 @@ from sqlalchemy import func, or_, select
 
 from app.access import get_visible_customer, scope_customers
 from app.auth import CurrentStaff, DbSession
-from app.fields.catalog import load_catalog
+from app.fields.catalog import load_catalog, progress_keys_for
 from app.config import get_settings
 from app.models import ConversionStatus, Customer, FieldDefinition, Meeting, SyncStatus
 from app.services.conversion import request_conversion
@@ -55,7 +55,7 @@ class CreateProspect(BaseModel):
 
 
 def _progress(c: Customer) -> dict[str, int]:
-    total = load_catalog().progress_total
+    total = len(progress_keys_for(c.current_values))
     return {"filled": c.fields_filled_count, "total": total, "percent": round(c.fields_filled_count * 100 / total)}
 
 
@@ -86,9 +86,10 @@ def _card(c: Customer) -> dict[str, Any]:
 def _detail(c: Customer) -> dict[str, Any]:
     cat = load_catalog()
     vals = c.current_values or {}
+    applicable = progress_keys_for(vals)
     sections = []
     for s in cat.sections:
-        keys = [f.key for f in cat.fields if f.section == s["key"] and f.counts_toward_progress]
+        keys = [f.key for f in cat.fields if f.section == s["key"] and f.key in applicable]
         sections.append(
             {"key": s["key"], "label": s["label"], "filled": sum(k in vals for k in keys), "total": len(keys)}
         )
@@ -150,6 +151,54 @@ def summary_counts(staff: CurrentStaff, db: DbSession) -> dict:
         "sync_pending": sync.get(SyncStatus.PENDING, 0) + sync.get(SyncStatus.SYNCING, 0),
         "sync_failed": sync.get(SyncStatus.FAILED, 0),
     }
+
+
+class NewLeadIn(BaseModel):
+    lead_values: dict[str, Any]
+
+
+@router.get("/-/lead-form")
+async def new_lead_form(staff: CurrentStaff) -> dict:
+    """The blank Zoho Lead form, for "New lead" (a lead entered directly, with no meeting first)."""
+    fields = await _zoho_form_fields()
+    return {"customer": None, "fields": [{**f, "value": None, "prefilled_from": None} for f in fields]}
+
+
+@router.post("/-/new-lead")
+async def new_lead(body: NewLeadIn, staff: CurrentStaff, db: DbSession):
+    """Create the customer from the Zoho Lead form and convert it straight away (no meeting)."""
+    fields = await _zoho_form_fields()
+    clean, errors = leadform.validate(fields, body.lead_values)
+    if errors:
+        raise HTTPException(status_code=422, detail={"code": "INVALID_VALUES", "errors": errors})
+    name = " ".join(str(clean[k]) for k in ("First_Name", "Last_Name") if clean.get(k))
+    values = {
+        "promoter": name,
+        "business_name": clean.get("Company"),
+        "mobile": clean.get("Mobile") or clean.get("Phone"),
+    }
+    try:
+        customer, _ = create_prospect(db, staff, {k: v for k, v in values.items() if v})
+    except InvalidValues as e:
+        db.rollback()
+        labels = {"promoter": "Last_Name", "business_name": "Company", "mobile": "Mobile"}
+        raise HTTPException(
+            status_code=422,
+            detail={"code": "INVALID_VALUES", "errors": {labels.get(k, k): m for k, m in e.errors.items()}},
+        ) from None
+    except DuplicateOtherStaff:
+        raise HTTPException(
+            status_code=409, detail={"code": "ASSIGNED_TO_OTHER_STAFF", "message": OTHER_STAFF_MESSAGE}
+        ) from None
+    except DuplicateOwn:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail={"code": "DUPLICATE_OWN", "message": "A customer with this mobile number already exists."},
+        ) from None
+    request_conversion(db, staff, customer, clean)
+    db.refresh(customer)
+    return _detail(customer)
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)

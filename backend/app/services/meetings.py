@@ -17,7 +17,8 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import Customer, GpsStatus, Meeting, MeetingStatus, Staff, SyncStatus
+from app.models import ConversionStatus, Customer, GpsStatus, Meeting, MeetingStatus, Staff, SyncStatus
+from app.services.conversion import request_conversion
 from app.services.customers import (
     IDENTITY_KEYS,
     DuplicateOtherStaff,
@@ -149,6 +150,11 @@ def complete_meeting(db: Session, staff: Staff, customer: Customer, data: Meetin
     )
     db.commit()
     db.refresh(meeting)
+    # "Proceed" is the sales manager's decision to take this prospect forward: it becomes a Zoho Lead.
+    # (The phone asks them to confirm before saving.) A retry or repeat is harmless.
+    if customer.current_values.get("sm_recommendation") == "Proceed" and customer.conversion_status == ConversionStatus.NOT_CONVERTED:
+        request_conversion(db, staff, customer)
+        db.refresh(meeting)
     return meeting, True
 
 
@@ -174,7 +180,7 @@ def new_lead_with_meeting(
 
     cleaned = clean_values(data.values)
     if not any(k in cleaned for k in IDENTITY_KEYS):
-        raise InvalidValues({k: "enter at least Business Name, Promoter or Mobile" for k in IDENTITY_KEYS})
+        raise InvalidValues({k: "enter at least Business Name, POC or Mobile" for k in IDENTITY_KEYS})
 
     target = resolve_duplicate(db, staff, cleaned.get("mobile"), on_duplicate, overwrite_customer_id)
     if target is None:

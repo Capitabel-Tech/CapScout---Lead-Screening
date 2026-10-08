@@ -1,3 +1,4 @@
+import MeetingType from './pages/MeetingType'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider, useAuth } from './auth'
 import ConvertPage from './pages/ConvertPage'
@@ -13,7 +14,10 @@ function Routed() {
   return (
     <Routes>
       <Route index element={<Home />} />
+      <Route path="new-meeting" element={<MeetingType />} />
+      <Route path="new-meeting/:kind" element={<MeetingType />} />
       <Route path="new" element={<MeetingPage key="new" />} />
+      <Route path="new-lead" element={<ConvertPage />} />
       <Route path="customers/:id" element={<CustomerPage />} />
       <Route path="customers/:id/convert" element={<ConvertPage />} />
       <Route path="customers/:id/meeting" element={<MeetingPage />} />

@@ -47,7 +47,7 @@ def test_create_prospect_progress_and_tab(client, make_staff):
     r = _create(client, a, promoter="Ramesh", business_name="RK", mobile="9876543210", source_type="DSA")
     body = r.json()
     assert body["conversion_status"] == "NOT_CONVERTED"
-    assert body["progress"] == {"filled": 4, "total": 41, "percent": 10}
+    assert body["progress"] == {"filled": 4, "total": 40, "percent": 10}
     assert body["lead_ref"] == "MSME-0001"
     sections = {s["key"]: s for s in body["sections"]}
     assert sections["lead"]["total"] == 7  # 10 fields minus Lead ID, Date, SM Name
@@ -93,7 +93,7 @@ def test_duplicate_mobile_other_staff_is_blocked(client, make_staff, db):
 
 def test_duplicate_mobile_own_record_offers_choices(client, make_staff):
     _, a = make_staff("A1")
-    first = _create(client, a, promoter="Ramesh", mobile="9876543210", purpose="LAP").json()
+    first = _create(client, a, promoter="Ramesh", mobile="9876543210", purpose="Expansion").json()
 
     r = _create(client, a, promoter="Ramesh Kumar", mobile="9876543210")
     assert r.status_code == 409
@@ -101,7 +101,7 @@ def test_duplicate_mobile_own_record_offers_choices(client, make_staff):
     assert d["code"] == "DUPLICATE_OWN"
     assert d["choices"] == ["overwrite", "create_new", "cancel"]
     assert d["matches"][0]["id"] == first["id"]
-    assert d["matches"][0]["purpose"] == "LAP"
+    assert d["matches"][0]["purpose"] == "Expansion"
     assert client.get("/api/customers", headers=a).json()["total"] == 1
 
 
@@ -119,7 +119,7 @@ def test_duplicate_mobile_own_create_new(client, make_staff):
 
 def test_duplicate_mobile_own_overwrite(client, make_staff, db):
     _, a = make_staff("A1")
-    first = _create(client, a, promoter="Ramesh", mobile="9876543210", purpose="LAP").json()
+    first = _create(client, a, promoter="Ramesh", mobile="9876543210", purpose="Expansion").json()
     r = client.post(
         "/api/customers",
         json={
@@ -133,7 +133,7 @@ def test_duplicate_mobile_own_overwrite(client, make_staff, db):
     body = r.json()
     assert body["id"] == first["id"]
     assert body["values"]["promoter"] == "Ramesh Kumar"
-    assert body["values"]["purpose"] == "LAP"  # untouched fields stay
+    assert body["values"]["purpose"] == "Expansion"  # untouched fields stay
     assert body["values"]["urgency"] == "Immediate"
     assert client.get("/api/customers", headers=a).json()["total"] == 1
 

@@ -1,6 +1,7 @@
 // Form controls from the client's prototype. Options always come from the
 // Excel (via the field catalogue); fields without an Excel dropdown are typed.
 
+import { formatINR } from '../format'
 import type { ReactNode } from 'react'
 
 type ChoiceProps = {
@@ -9,10 +10,11 @@ type ChoiceProps = {
   value: string
   onChange: (v: string) => void
   kind?: 'wrap' | 'seg' | 'hs'
+  disabled?: boolean // greyed out and cannot be changed
 }
 
 // Tapping the selected option again clears it, so a wrong tap can be undone.
-export function Choice({ label, options, value, onChange, kind = 'wrap' }: ChoiceProps) {
+export function Choice({ label, options, value, onChange, kind = 'wrap', disabled = false }: ChoiceProps) {
   const cls = kind === 'seg' ? 'sg' : 'chip'
   return (
     <div>
@@ -24,6 +26,7 @@ export function Choice({ label, options, value, onChange, kind = 'wrap' }: Choic
             type="button"
             className={`${cls}${value === o ? ' on' : ''}`}
             aria-pressed={value === o}
+            disabled={disabled}
             onClick={() => onChange(value === o ? '' : o)}
           >
             {o}
@@ -40,12 +43,14 @@ export function TriRow({
   value,
   onChange,
   risk = false,
+  disabled = false,
 }: {
   label: string
   options: string[]
   value: string
   onChange: (v: string) => void
   risk?: boolean
+  disabled?: boolean
 }) {
   return (
     <div className="row">
@@ -57,6 +62,7 @@ export function TriRow({
             type="button"
             className={`tri${value === o ? ' on' + (risk && o === 'Yes' ? ' risk' : '') : ''}`}
             aria-pressed={value === o}
+            disabled={disabled}
             onClick={() => onChange(value === o ? '' : o)}
           >
             {o}
@@ -115,14 +121,14 @@ export function TextField({
   )
 }
 
-// ₹ … L amount box.
+// ₹ amount box: type the full amount in rupees; commas are added as you type (12,34,567).
 export function MoneyField({
   id,
   label,
   value,
   onChange,
-  unit = 'L',
-  placeholder = '0.00',
+  unit = '',
+  placeholder = '0',
 }: {
   id: string
   label: string
@@ -145,8 +151,8 @@ export function MoneyBox({
   id,
   value,
   onChange,
-  unit = 'L',
-  placeholder = '0.00',
+  unit = '',
+  placeholder = '0',
   style,
 }: {
   id: string
@@ -162,14 +168,12 @@ export function MoneyBox({
       <input
         className="mono"
         id={id}
-        inputMode="decimal"
+        inputMode="numeric"
         placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(cleanNumber(e.target.value))}
+        value={formatINR(value)}
+        onChange={(e) => onChange(e.target.value.replace(/[^\d]/g, '').slice(0, 13))}
       />
-      <span className="unit" style={unit === 'Lakh' ? { fontSize: 14 } : undefined}>
-        {unit}
-      </span>
+      {unit && <span className="unit">{unit}</span>}
     </div>
   )
 }

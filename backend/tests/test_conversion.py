@@ -43,7 +43,7 @@ def test_convert_request_waits_for_zoho_before_moving_tabs(client, make_staff, d
 def test_conversion_keeps_customer_and_meeting_history(client, make_staff, db):
     _, a = make_staff("A1")
     cid = _lead(client, a)
-    _post(client, a, cid, _meeting({"purpose": "LAP"}, started="2026-09-02T10:00:00+05:30"))
+    _post(client, a, cid, _meeting({"purpose": "Expansion"}, started="2026-09-02T10:00:00+05:30"))
     client.post(f"/api/customers/{cid}/convert", headers=a)
     lead_created(db, db.get(Customer, cid), "ZL-2002")
 
@@ -54,7 +54,7 @@ def test_conversion_keeps_customer_and_meeting_history(client, make_staff, db):
     history = client.get(f"/api/customers/{cid}/meetings", headers=a).json()["items"]
     assert [m["sequence_no"] for m in history] == [3, 2, 1]
     detail = client.get(f"/api/customers/{cid}", headers=a).json()
-    assert detail["values"]["purpose"] == "LAP" and detail["values"]["urgency"] == "Immediate"
+    assert detail["values"]["purpose"] == "Expansion" and detail["values"]["urgency"] == "Immediate"
     assert client.get("/api/customers", headers=a).json()["total"] == 0  # not a second record
     assert client.get("/api/customers?tab=converted", headers=a).json()["total"] == 1
 
@@ -117,3 +117,20 @@ def test_staff_cannot_convert_someone_elses_customer(client, make_staff):
     cid = _lead(client, a)
     assert client.post(f"/api/customers/{cid}/convert", headers=b).status_code == 404
     assert client.get(f"/api/customers/{cid}", headers=a).json()["conversion_status"] == "NOT_CONVERTED"
+
+
+def test_proceed_recommendation_turns_the_prospect_into_a_lead(client, make_staff, db):
+    from tests.test_meetings import _meeting, _new_lead, _post
+
+    _, a = make_staff("A1")
+    r = _new_lead(client, a, {"promoter": "Asha", "business_name": "Asha Foods", "mobile": "9123456789", "sm_recommendation": "Proceed"})
+    assert r.status_code == 201, r.text
+    cid = r.json()["customer_id"]
+    assert client.get(f"/api/customers/{cid}", headers=a).json()["conversion_status"] == "CONVERTING"
+
+    # Any other recommendation leaves the prospect alone.
+    other = _new_lead(client, a, {"promoter": "Ravi", "mobile": "9123456780", "sm_recommendation": "Hold"}).json()["customer_id"]
+    assert client.get(f"/api/customers/{other}", headers=a).json()["conversion_status"] == "NOT_CONVERTED"
+    # ...until a later meeting says Proceed.
+    _post(client, a, other, _meeting({"sm_recommendation": "Proceed"}, started="2026-09-03T10:00:00+05:30"))
+    assert client.get(f"/api/customers/{other}", headers=a).json()["conversion_status"] == "CONVERTING"

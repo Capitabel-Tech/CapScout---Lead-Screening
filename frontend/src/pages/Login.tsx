@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { ApiError } from '../api'
 import { useAuth } from '../auth'
+import { Logo } from '../components/Logo'
 import { IconArrow } from '../components/icons'
 
 export default function Login() {
@@ -28,8 +29,8 @@ export default function Login() {
   return (
     <form className="login" onSubmit={submit}>
       <div className="hdr">
-        <div className="hdr-sub">CapScout - Lead Screening</div>
-        <div style={{ fontSize: 24, fontWeight: 700, marginTop: 2 }}>Sign in</div>
+        <Logo size="big" />
+        <div style={{ fontSize: 24, fontWeight: 700, marginTop: 18 }}>Sign in</div>
       </div>
       <div className="scroll" style={{ paddingTop: 20 }}>
         {import.meta.env.VITE_DEMO === 'true' && (

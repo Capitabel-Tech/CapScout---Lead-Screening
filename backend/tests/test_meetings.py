@@ -69,7 +69,7 @@ def test_first_and_second_meeting_build_current_state_and_keep_history(client, m
 
     # Meeting 2: 8 new fields + 2 existing fields updated (Test 2).
     m2_values = {
-        "monthly_surplus": "6",
+        "litigation_dispute": "None",
         "existing_debt": "10",
         "monthly_emi": "0.8",
         "gst_available": "Yes",
@@ -96,7 +96,7 @@ def test_first_and_second_meeting_build_current_state_and_keep_history(client, m
     detail = client.get(f"/api/customers/{cid}", headers=a).json()
     assert detail["values"]["monthly_banking"] == "45"
     assert detail["values"]["potential_lender"] == "HDFC Bank"
-    assert detail["progress"]["filled"] == 23  # 15 + 8, of 41
+    assert detail["progress"]["filled"] == 23  # 15 + 8, of 40
     assert detail["meeting_count"] == 2
     assert detail["conversion_status"] == "NOT_CONVERTED"
     assert detail["zoho_lead_id"] is None  # no Zoho Lead before conversion
@@ -113,7 +113,7 @@ def test_first_and_second_meeting_build_current_state_and_keep_history(client, m
 def test_retrying_the_same_meeting_does_not_duplicate(client, make_staff):
     _, a = make_staff("A1")
     cid = _new_customer(client, a)
-    body = _meeting({"purpose": "LAP"})
+    body = _meeting({"purpose": "Expansion"})
     assert _post(client, a, cid, body).status_code == 201
     again = _post(client, a, cid, body)
     assert again.status_code == 200
@@ -127,8 +127,8 @@ def test_meeting_id_cannot_be_reused_for_another_customer(client, make_staff):
     c1 = _new_customer(client, a, promoter="One")
     c2 = _new_customer(client, a, promoter="Two")
     mid = uuid.uuid4()
-    assert _post(client, a, c1, _meeting({"purpose": "LAP"}, mid=mid)).status_code == 201
-    r = _post(client, a, c2, _meeting({"purpose": "LAP"}, mid=mid))
+    assert _post(client, a, c1, _meeting({"purpose": "Expansion"}, mid=mid)).status_code == 201
+    r = _post(client, a, c2, _meeting({"purpose": "Expansion"}, mid=mid))
     assert r.status_code == 409
     assert r.json()["detail"]["code"] == "MEETING_ID_CONFLICT"
 
@@ -139,7 +139,7 @@ def test_gps_or_reason_is_required_and_never_faked(client, make_staff):
     assert _post(client, a, cid, _meeting({}, gps=None)).status_code == 422
     assert _post(client, a, cid, _meeting({}, gps=None, reason="   ")).status_code == 422
 
-    r = _post(client, a, cid, _meeting({"purpose": "LAP"}, gps=None, reason="Permission denied"))
+    r = _post(client, a, cid, _meeting({"purpose": "Expansion"}, gps=None, reason="Permission denied"))
     assert r.status_code == 201
     m = r.json()
     assert m["gps_status"] == "UNAVAILABLE"
@@ -173,7 +173,7 @@ def test_invalid_field_values_save_nothing(client, make_staff):
 def test_clearing_a_wrong_value(client, make_staff):
     _, a = make_staff("A1")
     cid = _new_customer(client, a)
-    _post(client, a, cid, _meeting({"industry": "Textile", "purpose": "LAP"}))
+    _post(client, a, cid, _meeting({"industry": "Textile", "purpose": "Expansion"}))
     r = _post(client, a, cid, _meeting({"industry": ""}, started="2026-09-02T10:00:00+05:30"))
     assert r.json()["changes"] == [{"field": "industry", "old": "Textile", "new": None, "type": "CLEARED"}]
     detail = client.get(f"/api/customers/{cid}", headers=a).json()
@@ -185,16 +185,16 @@ def test_staff_cannot_add_or_see_meetings_of_others(client, make_staff):
     _, a = make_staff("A1")
     _, b = make_staff("B1")
     cid = _new_customer(client, a)
-    _post(client, a, cid, _meeting({"purpose": "LAP"}))
+    _post(client, a, cid, _meeting({"purpose": "Expansion"}))
     assert client.get(f"/api/customers/{cid}/meetings", headers=b).status_code == 404
     assert _post(client, b, cid, _meeting({"purpose": "Capex"})).status_code == 404
-    assert client.get(f"/api/customers/{cid}", headers=a).json()["values"]["purpose"] == "LAP"
+    assert client.get(f"/api/customers/{cid}", headers=a).json()["values"]["purpose"] == "Expansion"
 
 
 def test_meeting_records_who_conducted_it(client, make_staff):
     staff, a = make_staff("A1")
     cid = _new_customer(client, a)
-    m = _post(client, a, cid, _meeting({"purpose": "LAP"})).json()
+    m = _post(client, a, cid, _meeting({"purpose": "Expansion"})).json()
     assert m["staff"]["id"] == str(staff.id)
 
 
@@ -203,7 +203,7 @@ def test_changing_mobile_to_another_staffs_customer_is_blocked(client, make_staf
     _, b = make_staff("B1")
     _new_customer(client, b, promoter="Theirs", mobile="9000000002")
     cid = _new_customer(client, a, promoter="Mine", mobile="9000000001")
-    r = _post(client, a, cid, _meeting({"mobile": "+91 90000 00002", "purpose": "LAP"}))
+    r = _post(client, a, cid, _meeting({"mobile": "+91 90000 00002", "purpose": "Expansion"}))
     assert r.status_code == 409
     assert r.json()["detail"]["message"] == "This customer is already assigned to another staff member."
     detail = client.get(f"/api/customers/{cid}", headers=a).json()
@@ -244,7 +244,7 @@ def test_new_lead_retry_returns_same_records(client, make_staff):
 
 def test_new_lead_needs_identity_and_valid_values(client, make_staff):
     _, a = make_staff("A1")
-    assert _new_lead(client, a, {"purpose": "LAP"}).status_code == 422
+    assert _new_lead(client, a, {"purpose": "Expansion"}).status_code == 422
     assert _new_lead(client, a, {"promoter": "X", "next_action": "Call promoter"}).status_code == 422  # not an Excel option
     assert client.get("/api/customers", headers=a).json()["total"] == 0
 
@@ -257,7 +257,7 @@ def test_new_lead_duplicate_rules(client, make_staff):
     assert r.status_code == 409
     assert r.json()["detail"]["code"] == "ASSIGNED_TO_OTHER_STAFF"
 
-    first = _new_lead(client, a, {"promoter": "Ramesh", "mobile": "9000000001", "purpose": "LAP"}).json()
+    first = _new_lead(client, a, {"promoter": "Ramesh", "mobile": "9000000001", "purpose": "Expansion"}).json()
     r = _new_lead(client, a, {"promoter": "Ramesh K", "mobile": "9000000001"})
     assert r.status_code == 409 and r.json()["detail"]["code"] == "DUPLICATE_OWN"
 
@@ -270,7 +270,7 @@ def test_new_lead_duplicate_rules(client, make_staff):
     assert r.json()["customer_id"] == first["customer_id"]
     assert r.json()["meeting"]["sequence_no"] == 2
     detail = client.get(f"/api/customers/{first['customer_id']}", headers=a).json()
-    assert detail["values"]["promoter"] == "Ramesh K" and detail["values"]["purpose"] == "LAP"
+    assert detail["values"]["promoter"] == "Ramesh K" and detail["values"]["purpose"] == "Expansion"
 
 
 def test_status_and_litigation_are_free_text_next_action_uses_excel_options(client, make_staff):
@@ -316,3 +316,12 @@ def test_only_the_promoters_mobile_counts_as_a_duplicate_not_the_source_contact(
     assert r.status_code == 409
     assert r.json()["detail"]["code"] == "DUPLICATE_OWN"
     assert r.json()["detail"]["choices"] == ["overwrite", "create_new", "cancel"]
+
+
+def test_progress_total_is_lower_for_direct_customers(client, make_staff):
+    _, a = make_staff("A1")
+    cid = _new_customer(client, a, source_type="Direct", promoter="Ramesh")
+    detail = client.get(f"/api/customers/{cid}", headers=a).json()
+    assert detail["progress"]["total"] == 38 and detail["progress"]["filled"] == 2  # source type + POC
+    other = _new_customer(client, a, source_type="DSA", promoter="Ramesh")
+    assert client.get(f"/api/customers/{other}", headers=a).json()["progress"]["total"] == 40

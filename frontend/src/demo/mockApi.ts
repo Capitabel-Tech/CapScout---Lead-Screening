@@ -164,6 +164,11 @@ function addMeeting(c: DCustomer, input: MeetingInput, opts: { createdMs?: numbe
     failed: opts.failed ?? false,
   }
   c.meetings.push(meeting)
+  // "Proceed" sends the prospect to Leads (the phone asked the user to confirm first).
+  if (c.values.sm_recommendation === 'Proceed' && c.status === 'NOT_CONVERTED') {
+    c.status = 'CONVERTING'
+    c.convert_requested_ms = Date.now()
+  }
   return meeting
 }
 
@@ -221,19 +226,19 @@ function seed(): Db {
       values: {
         source_type: 'DSA', source_name: 'Dhanvik Reddy', source_contact: '7894561231',
         business_name: 'Sri Charan Enterprises', promoter: 'Charan Reddy', mobile: '9875435211',
-        constitution: 'Proprietorship', industry: 'Automobiles', vintage_years: '12', loan_required: '50',
+        constitution: 'Proprietorship', industry: 'Automobiles', vintage_years: '12', loan_required: '5000000',
         purpose: 'Expansion', urgency: '<30 days', secured_unsecured: 'Secured',
-        annual_turnover: '150', monthly_banking: '30', monthly_surplus: '20', existing_debt: '12', monthly_emi: '1',
+        annual_turnover: '1200000', monthly_banking: '3000000', existing_debt: '1200000', monthly_emi: '100000',
         gst_available: 'Yes', itr_financials: 'Yes', bank_statements: 'Yes',
-        property_available: 'Yes', property_value: '120', existing_mortgage: 'Yes',
+        property_available: 'Yes', property_type: 'Commercial', property_documents: 'Yes',
         overdue: 'No', bounces: 'No', settlement_write_off: 'No',
         documents_readiness: 'Ready', business_quality: 'Strong', banking_quality: 'Strong', credit_risk: 'Manageable',
         opportunity_grade: 'A – Priority', likely_product: 'LAP', sm_recommendation: 'Proceed',
         next_action: 'New', next_action_date: date(3),
       },
     },
-    { at: hoursAgo(48), gps: [13.085, 80.2101, 14], values: { next_action: 'Sanction', loan_required: '60' } },
-    { at: hoursAgo(20), gps: [13.0852, 80.2099, 11], values: { loan_required: '70' } },
+    { at: hoursAgo(48), gps: [13.085, 80.2101, 14], values: { next_action: 'Sanction', loan_required: '6000000' } },
+    { at: hoursAgo(20), gps: [13.0852, 80.2099, 11], values: { loan_required: '7000000' } },
   ])
   charan.status = 'CONVERTED'
   charan.zoho_lead_id = '1236291000001094004'
@@ -245,9 +250,9 @@ function seed(): Db {
       gps: [17.4948, 78.399, 22],
       values: {
         source_type: 'Direct', business_name: "Pragya's Sales and Retails", promoter: 'Pragya', mobile: '9000000011',
-        industry: 'Retail', constitution: 'Partnership', vintage_years: '4', loan_required: '15',
+        industry: 'Retail', constitution: 'Partnership', vintage_years: '4', loan_required: '1500000',
         purpose: 'Working Capital', urgency: 'Immediate', secured_unsecured: 'Unsecured',
-        annual_turnover: '80', monthly_banking: '9', gst_available: 'Yes', itr_financials: 'Unknown',
+        annual_turnover: '700000', monthly_banking: '900000', gst_available: 'Yes', itr_financials: 'Unknown',
         bank_statements: 'Yes', business_quality: 'Average', next_action: 'Qualified', next_action_date: date(0),
       },
     },
@@ -260,9 +265,9 @@ function seed(): Db {
       values: {
         source_type: 'DSA', source_name: 'Raghav', source_contact: '9811122233',
         business_name: "Vishwath's tech solutions", promoter: 'Vishwath', mobile: '9000000010',
-        industry: 'IT services', constitution: 'Pvt Ltd', vintage_years: '7', loan_required: '40',
+        industry: 'IT services', constitution: 'Pvt Ltd', vintage_years: '7', loan_required: '4000000',
         purpose: 'Capex', urgency: '30-60 days', secured_unsecured: 'Open to both',
-        annual_turnover: '210', monthly_banking: '28', monthly_surplus: '6', existing_debt: '25', monthly_emi: '2.5',
+        annual_turnover: '1700000', monthly_banking: '2800000', existing_debt: '2500000', monthly_emi: '250000',
         gst_available: 'Yes', itr_financials: 'Yes', bank_statements: 'No',
         documents_readiness: 'Partial', business_quality: 'Strong', banking_quality: 'Average', credit_risk: 'Manageable',
         opportunity_grade: 'B – Develop', likely_product: 'Business Loan', sm_recommendation: 'Hold',
@@ -282,11 +287,11 @@ function seed(): Db {
       values: {
         source_type: 'Auditor/CA', source_name: 'CA Ramesh Babu', source_contact: '9988776655',
         business_name: 'Sri Maruthi Automobiles', promoter: 'Maruthi Rao', mobile: '9000000012',
-        industry: 'Auto dealership', constitution: 'Proprietorship', vintage_years: '9', loan_required: '60',
-        purpose: 'LAP', urgency: '<30 days', secured_unsecured: 'Secured',
-        property_available: 'Yes', property_value: '180', existing_mortgage: 'No', overdue: 'No', bounces: 'No',
+        industry: 'Auto dealership', constitution: 'Proprietorship', vintage_years: '9', loan_required: '6000000',
+        purpose: 'Expansion', urgency: '<30 days', secured_unsecured: 'Secured',
+        property_available: 'Yes', property_type: 'Residential', property_documents: 'Yes', overdue: 'No', bounces: 'No',
         business_quality: 'Strong', credit_risk: 'None known', opportunity_grade: 'B – Develop',
-        likely_product: 'LAP', sm_recommendation: 'Proceed', next_action: 'Lender Matching', next_action_date: date(1),
+        likely_product: 'LAP', sm_recommendation: 'Hold', next_action: 'Lender Matching', next_action_date: date(1),
       },
     },
   ])
@@ -298,9 +303,9 @@ function seed(): Db {
       values: {
         source_type: 'Connector', source_name: 'Prasad', source_contact: '9123456780',
         business_name: 'Annapurna Foods LLP', promoter: 'Lakshmi Devi', mobile: '9000000009',
-        industry: 'Food processing', constitution: 'LLP', vintage_years: '8', loan_required: '15',
+        industry: 'Food processing', constitution: 'LLP', vintage_years: '8', loan_required: '1500000',
         purpose: 'Working Capital', urgency: 'Flexible', secured_unsecured: 'Unsecured',
-        annual_turnover: '95', monthly_banking: '11', gst_available: 'Yes', itr_financials: 'Yes', bank_statements: 'Yes',
+        annual_turnover: '800000', monthly_banking: '1100000', gst_available: 'Yes', itr_financials: 'Yes', bank_statements: 'Yes',
         documents_readiness: 'Partial', business_quality: 'Average', banking_quality: 'Average',
         opportunity_grade: 'B – Develop', likely_product: 'Working Capital', sm_recommendation: 'Proceed',
         next_action: 'Documents Pending', next_action_date: date(-3),
@@ -363,9 +368,19 @@ const syncOf = (m: DMeeting): 'PENDING' | 'SYNCED' | 'FAILED' =>
 
 const refOf = (c: DCustomer) => `MSME-${String(c.ref_no).padStart(4, '0')}`
 
+// Direct customers are not asked for a source name or contact, so those two do not count for them.
+const applicableKeys = (c: DCustomer) =>
+  [...PROGRESS_KEYS].filter(
+    (k) =>
+      !(['source_name', 'source_contact'].includes(k) && c.values.source_type === 'Direct') &&
+      !(['property_type', 'property_documents'].includes(k) && c.values.property_available === 'No') &&
+      !(['property_available', 'property_type', 'property_documents'].includes(k) && c.values.secured_unsecured === 'Unsecured'),
+  )
+
 function progress(c: DCustomer) {
-  const filled = Object.keys(c.values).filter((k) => PROGRESS_KEYS.has(k)).length
-  const total = PROGRESS_KEYS.size
+  const keys = applicableKeys(c)
+  const filled = keys.filter((k) => k in c.values).length
+  const total = keys.length
   return { filled, total, percent: Math.round((filled * 100) / total) }
 }
 
@@ -407,7 +422,7 @@ function detail(c: DCustomer): CustomerDetail {
     lead_sync_error: null,
     lead_sync_attempts: 0,
     sections: CATALOG.sections.map((s) => {
-      const keys = FIELDS.filter((f) => f.section === s.key && f.counts_toward_progress).map((f) => f.key)
+      const keys = applicableKeys(c).filter((k) => BY_KEY.get(k)?.section === s.key)
       return { key: s.key, label: s.label, filled: keys.filter((k) => k in c.values).length, total: keys.length }
     }),
     values: { ...c.values },
@@ -570,7 +585,7 @@ export async function demoApi<T>(path: string, init: RequestInit = {}): Promise<
 
     const typed = Object.fromEntries(Object.entries(m.values ?? {}).filter(([k]) => k !== 'location'))
     if (!['business_name', 'promoter', 'mobile'].some((k) => String(typed[k] ?? '').trim())) {
-      const message = 'enter at least Business Name, Promoter or Mobile'
+      const message = 'enter at least Business Name, POC or Mobile'
       throw new DemoHttpError(422, { code: 'INVALID_VALUES', errors: { business_name: message, promoter: message, mobile: message } })
     }
     const mobile = normMobile(String(typed.mobile ?? ''))
@@ -601,6 +616,31 @@ export async function demoApi<T>(path: string, init: RequestInit = {}): Promise<
     const meeting = addMeeting(customer, { ...m, values: typed })
     save()
     return out({ customer_id: customer.id, meeting: meetingOut(customer, meeting) })
+  }
+
+  // ---- "New lead": the blank Zoho Lead form; saving creates the customer and the Lead together ----
+  if (p === '/customers/-/lead-form') {
+    const blank = convertForm(newCustomerShell(0)).fields.map((f) => ({ ...f, value: null, prefilled_from: null }))
+    return out({ customer: null, fields: blank })
+  }
+  if (p === '/customers/-/new-lead' && method === 'POST') {
+    const lv = (body.lead_values ?? {}) as Record<string, unknown>
+    const errors = validateLead(lv)
+    if (Object.keys(errors).length) throw new DemoHttpError(422, { code: 'INVALID_VALUES', errors })
+    const mobile = normMobile(String(lv.Mobile ?? lv.Phone ?? ''))
+    if (mobile && d.customers.some((c) => c.values.mobile === mobile))
+      throw new DemoHttpError(409, { code: 'DUPLICATE_OWN', message: 'A customer with this mobile number already exists.' })
+    const customer = newCustomer()
+    customer.values = {
+      promoter: [lv.First_Name, lv.Last_Name].filter(Boolean).join(' '),
+      ...(lv.Company ? { business_name: String(lv.Company) } : {}),
+      ...(mobile ? { mobile } : {}),
+    }
+    customer.status = 'CONVERTING'
+    customer.convert_requested_ms = Date.now()
+    d.customers.push(customer)
+    save()
+    return out(detail(customer))
   }
 
   // ---- one customer ----

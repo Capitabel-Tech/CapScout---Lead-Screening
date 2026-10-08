@@ -11,7 +11,7 @@ import { friendlyZohoError } from '../zohoErrors'
 import { loadDraft } from '../meetingDraft'
 
 const STATUS_LABEL: Record<CustomerDetail['conversion_status'], string> = {
-  NOT_CONVERTED: 'Not Converted',
+  NOT_CONVERTED: 'Prospect',
   CONVERTING: 'Converting…',
   CONVERTED: 'Converted Lead',
   CONVERSION_FAILED: 'Conversion failed',
@@ -86,7 +86,7 @@ export default function CustomerPage() {
             <div style={{ fontSize: 17, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {c ? displayName(c) : 'Lead'}
             </div>
-            <div className="mono" style={{ fontSize: 12, color: '#B9C6D3' }}>
+            <div className="mono" style={{ fontSize: 12, color: 'var(--muted)' }}>
               {c ? `${c.lead_ref} · ${STATUS_LABEL[c.conversion_status]}` : ''}
             </div>
           </div>
@@ -131,7 +131,6 @@ export default function CustomerPage() {
               c={c}
               slow={slow}
               retrying={retrying}
-              onConvert={() => navigate(`/customers/${id}/convert`)}
               onRetry={retryConversion}
             />
 
@@ -195,26 +194,19 @@ export default function CustomerPage() {
   )
 }
 
-// Conversion state on the lead screen: the action, or where the conversion is.
+// Where the conversion to a Lead is. (A prospect becomes a Lead when a meeting is saved with the
+// recommendation "Proceed"; there is no separate button.)
 function ConversionPanel({
   c,
   slow: slowLocal,
   retrying,
-  onConvert,
   onRetry,
 }: {
   c: CustomerDetail
   slow: boolean
   retrying: boolean
-  onConvert: () => void
   onRetry: () => void
 }) {
-  if (c.conversion_status === 'NOT_CONVERTED')
-    return (
-      <button className="btn ghost" style={{ width: '100%' }} onClick={onConvert}>
-        Convert to Lead
-      </button>
-    )
   if (c.conversion_status === 'CONVERTING') {
     // Normally a few seconds. If it is taking longer (or Zoho already failed once and is retrying),
     // say so, and tell the user it is safe to close the app and check back later.
@@ -231,7 +223,7 @@ function ConversionPanel({
           <div style={{ fontSize: 13, color: 'var(--ink)' }}>
             This is taking longer than usual and may take <strong>up to 5 minutes</strong>. You can safely{' '}
             <strong>close the app and check again after 5 minutes</strong>. It will finish on its own and the lead will
-            then move to Converted Leads.
+            then move to Leads.
           </div>
         ) : (
           <div style={{ fontSize: 13, color: 'var(--muted)' }}>Sending to Zoho CRM. This usually takes a few seconds.</div>

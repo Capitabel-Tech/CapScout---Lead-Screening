@@ -1,6 +1,6 @@
 """Copy fields_v1.json into field_definitions (idempotent)."""
 
-from sqlalchemy import Connection
+from sqlalchemy import Connection, update
 from sqlalchemy.dialects.postgresql import insert
 
 from app.fields.catalog import load_catalog
@@ -37,4 +37,6 @@ def sync_catalog(conn: Connection) -> int:
             index_elements=["key"], set_={c: getattr(stmt.excluded, c) for c in updatable}
         )
     )
+    # A field the client later removed stays in the table (old meetings may mention it) but is switched off.
+    conn.execute(update(FieldDefinition).where(FieldDefinition.key.not_in([r["key"] for r in rows])).values(is_active=False))
     return len(rows)

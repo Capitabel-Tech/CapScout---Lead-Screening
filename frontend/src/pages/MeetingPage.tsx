@@ -7,7 +7,7 @@
 // /customers/:id/meeting records the next meeting for an existing customer.
 
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   api,
   ApiError,
@@ -21,8 +21,8 @@ import {
 import { useAuth } from '../auth'
 import { IconArrow, IconCheck, IconGps, IconMic, IconX } from '../components/icons'
 import { Choice, cleanNumber, MoneyBox, MoneyField, TextField, TriRow } from '../components/widgets'
-import { useFieldCatalog } from '../fields'
-import { addDays, dayMonth, isoDate, relativeDay, shortDate, shortStaffName } from '../format'
+import { DEPENDENT_FIELDS, useFieldCatalog } from '../fields'
+import { addDays, dayMonth, formatINR, isoDate, relativeDay, shortDate, shortStaffName } from '../format'
 import { captureLocation, GPS_ERROR_TEXT, GpsError, type GpsErrorCode } from '../gps'
 import { clearDraft, loadDraft, newDraft, saveDraft, type MeetingDraft } from '../meetingDraft'
 
@@ -37,6 +37,7 @@ export default function MeetingPage() {
   const customerId = params.id ?? NEW
   const isNew = customerId === NEW
   const navigate = useNavigate()
+  const location = useLocation()
   const { staff } = useAuth()
   const catalog = useFieldCatalog()
   const [customer, setCustomer] = useState<CustomerDetail | null>(null)
@@ -61,8 +62,18 @@ export default function MeetingPage() {
   const v = (key: string) => draft.values[key] ?? current[key] ?? ''
   const set = (key: string) => (value: string) => {
     const values = { ...draft.values }
-    if (value === (current[key] ?? '')) delete values[key]
-    else values[key] = value
+    const put = (k: string, val: string) => {
+      if (val === (current[k] ?? '')) delete values[k]
+      else values[k] = val
+    }
+    // An answer can hide other fields (Direct hides the source details): clear what was typed in them,
+    // and in the fields that depend on those.
+    const change = (k: string, val: string) => {
+      put(k, val)
+      for (const [dep, rules] of Object.entries(DEPENDENT_FIELDS))
+        if (rules.some(([parent, show]) => parent === k && !show(val))) change(dep, '')
+    }
+    change(key, value)
     update({ ...draft, values })
   }
   const field = (key: string) => {
@@ -70,8 +81,9 @@ export default function MeetingPage() {
     return { label: f.label, options: f.options ?? [], value: v(key), onChange: set(key) }
   }
 
+  const proceedToLead = v('sm_recommendation') === 'Proceed' && (isNew || customer?.conversion_status === 'NOT_CONVERTED')
   const leaveTo = isNew ? '/' : `/customers/${customerId}`
-  const title = isNew ? 'New lead' : `Meeting #${(customer?.meeting_count ?? 0) + 1}`
+  const title = isNew ? ((location.state as { title?: string } | null)?.title ?? 'New meeting') : `Meeting #${(customer?.meeting_count ?? 0) + 1}`
   const ref = customer?.lead_ref ?? 'New'
   const step = STEPS[stepIdx]
   const caption = catalog.sections.find((s) => s.key === step)?.label ?? ''
@@ -89,7 +101,7 @@ export default function MeetingPage() {
           </button>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 17, fontWeight: 700 }}>{title}</div>
-            <div className="mono" style={{ fontSize: 12, color: '#B9C6D3' }}>
+            <div className="mono" style={{ fontSize: 12, color: 'var(--muted)' }}>
               {ref} · {dayMonth(new Date(draft.startedAt))} · {shortStaffName(staff?.full_name)}
             </div>
           </div>
@@ -99,9 +111,10 @@ export default function MeetingPage() {
               height: 36,
               padding: '0 12px',
               borderRadius: 18,
-              border: '1.5px solid #4A6178',
-              background: 'transparent',
-              color: '#fff',
+              border: '1.5px solid var(--line)',
+              background: '#fff',
+              boxShadow: 'var(--shadow-sm)',
+              color: 'var(--navy)',
               fontSize: 13,
               fontWeight: 600,
             }}
@@ -140,7 +153,7 @@ export default function MeetingPage() {
         {step === 'money' && <MoneyStep field={field} />}
         {step === 'property' && <PropertyStep field={field} />}
         {step === 'assess' && <AssessStep field={field} />}
-        {step === 'decide' && <DecideStep field={field} />}
+        {step === 'decide' && <DecideStep field={field} proceedToLead={proceedToLead} />}
       </div>
 
       <SaveFooter
@@ -157,6 +170,7 @@ export default function MeetingPage() {
           setSaved(s)
         }}
         fallbackRef={ref}
+        proceedToLead={proceedToLead}
       />
     </>
   )
@@ -164,6 +178,12 @@ export default function MeetingPage() {
 
 type FieldProps = { label: string; options: string[]; value: string; onChange: (v: string) => void }
 type F = (key: string) => FieldProps
+
+// The box to type into when a dropdown is set to "Other" (the answer is saved in the field `<name>_other`).
+function OtherBox({ field, of }: { field: F; of: string }) {
+  if (field(of).value !== 'Other') return null
+  return <TextField id={`f-${of}-other`} {...field(`${of}_other`)} placeholder="Type here" />
+}
 
 // --- the six steps (prototype layout, Excel labels and options) ---------------------------
 
@@ -190,6 +210,7 @@ function useShownPlace(point: GpsPoint | null): { state: 'idle' | 'loading' | 'o
 }
 
 function LeadStep({ field, gps, leadLocation }: { field: F; gps: MeetingGps; leadLocation: string }) {
+  const source = field('source_type')
   const mobile = field('mobile')
   const loc = field('location')
   const place = useShownPlace(gps.point)
@@ -205,11 +226,14 @@ function LeadStep({ field, gps, leadLocation }: { field: F; gps: MeetingGps; lea
             : 'Not available (no GPS)'
   return (
     <>
-      <Choice {...field('source_type')} />
-      <div className="g2">
-        <TextField id="f-srcname" {...field('source_name')} placeholder="CA / DSA name" />
-        <TextField id="f-srccontact" {...field('source_contact')} placeholder="Mobile" type="tel" inputMode="tel" />
-      </div>
+      <Choice {...source} />
+      <OtherBox field={field} of="source_type" />
+      {source.value !== 'Direct' && (
+        <div className="g2">
+          <TextField id="f-srcname" {...field('source_name')} placeholder="CA / DSA name" />
+          <TextField id="f-srccontact" {...field('source_contact')} placeholder="Mobile" type="tel" inputMode="tel" />
+        </div>
+      )}
       <TextField id="f-biz" {...field('business_name')} placeholder="Registered business name" />
       <div className="g2">
         <TextField id="f-prom" {...field('promoter')} placeholder="Full name" />
@@ -287,6 +311,7 @@ function LeadStep({ field, gps, leadLocation }: { field: F; gps: MeetingGps; lea
 }
 
 function BusinessStep({ field }: { field: F }) {
+  const constitution = field('constitution')
   const vintage = field('vintage_years')
   const loan = field('loan_required')
   const years = Number(vintage.value || 0)
@@ -302,7 +327,8 @@ function BusinessStep({ field }: { field: F }) {
   } as const
   return (
     <>
-      <Choice {...field('constitution')} />
+      <Choice {...constitution} />
+      <OtherBox field={field} of="constitution" />
       <TextField id="f-ind" {...field('industry')} placeholder="e.g. Food processing, Auto parts" />
       <div className="g2">
         <div>
@@ -339,73 +365,22 @@ function BusinessStep({ field }: { field: F }) {
           <label className="lbl" htmlFor="f-loan">
             {loan.label}
           </label>
-          <MoneyBox id="f-loan" value={loan.value} onChange={loan.onChange} unit="Lakh" placeholder="0" />
+          <MoneyBox id="f-loan" value={loan.value} onChange={loan.onChange} />
         </div>
       </div>
       <Choice {...field('purpose')} />
+      <OtherBox field={field} of="purpose" />
       <Choice {...field('urgency')} kind="seg" />
       <Choice {...field('secured_unsecured')} kind="seg" />
     </>
   )
 }
 
-function MoneyStep({ field }: { field: F }) {
-  const money = (key: string, id: string) => {
-    const f = field(key)
-    return <MoneyField id={id} label={f.label} value={f.value} onChange={f.onChange} />
-  }
-  return (
-    <>
-      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-        <div className="h">Financials</div>
-        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)' }}>All amounts in ₹ lakh</div>
-      </div>
-      <div className="g2">
-        {money('annual_turnover', 'm-turn')}
-        {money('monthly_banking', 'm-bank')}
-        {money('monthly_surplus', 'm-surp')}
-        {money('existing_debt', 'm-debt')}
-        {money('monthly_emi', 'm-emi')}
-      </div>
-      <div className="h" style={{ marginTop: 6 }}>
-        Documents available
-      </div>
-      <div className="card">
-        <TriRow {...field('gst_available')} />
-        <TriRow {...field('itr_financials')} />
-        <TriRow {...field('bank_statements')} />
-      </div>
-    </>
-  )
-}
-
-function PropertyStep({ field }: { field: F }) {
-  const prop = field('property_available')
-  const value = field('property_value')
+function CreditFlags({ field }: { field: F }) {
   const flags = ['overdue', 'bounces', 'settlement_write_off'].map(field)
   const n = flags.filter((f) => f.value === 'Yes').length
   return (
     <>
-      <div className="h">Property</div>
-      <div className="card">
-        <TriRow {...prop} />
-        {prop.value === 'Yes' && (
-          <>
-            <div className="row" style={{ borderBottom: '1px solid #EDF0F2' }}>
-              <label className="t" htmlFor="f-propval" style={{ fontSize: 14, fontWeight: 600, color: '#3D4B59' }}>
-                {value.label}
-              </label>
-              <MoneyBox
-                id="f-propval"
-                value={value.value}
-                onChange={value.onChange}
-                style={{ width: 200, height: 44, flex: 'none' }}
-              />
-            </div>
-            <TriRow {...field('existing_mortgage')} />
-          </>
-        )}
-      </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
         <div className="h">Credit red flags</div>
         <div
@@ -426,8 +401,62 @@ function PropertyStep({ field }: { field: F }) {
           <TriRow key={f.label} {...f} risk />
         ))}
       </div>
+    </>
+  )
+}
+
+function MoneyStep({ field }: { field: F }) {
+  const money = (key: string, id: string) => {
+    const f = field(key)
+    return <MoneyField id={id} label={f.label} value={f.value} onChange={f.onChange} />
+  }
+  return (
+    <>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
+        <div className="h">Financials</div>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)' }}>Type the full amount in rupees</div>
+      </div>
+      <div className="g2">
+        {money('annual_turnover', 'm-turn')}
+        {money('monthly_banking', 'm-bank')}
+        {money('existing_debt', 'm-debt')}
+        {money('monthly_emi', 'm-emi')}
+      </div>
+      <CreditFlags field={field} />
+      <div className="h" style={{ marginTop: 6 }}>
+        Documents available
+      </div>
+      <div className="card">
+        <TriRow {...field('gst_available')} />
+        <TriRow {...field('itr_financials')} />
+        <TriRow {...field('bank_statements')} />
+      </div>
       {/* No dropdown for Litigation/Dispute in the Excel, so it is typed. */}
       <TextField id="f-litig" {...field('litigation_dispute')} placeholder="Type details, or leave blank" />
+    </>
+  )
+}
+
+function PropertyStep({ field }: { field: F }) {
+  const prop = field('property_available')
+  const unsecured = field('secured_unsecured').value === 'Unsecured'
+  const off = unsecured || prop.value === 'No' // nothing to fill: the rest of the step is greyed out
+  return (
+    <>
+      <div className="h">Property</div>
+      {unsecured && (
+        <div role="status" style={{ padding: '8px 12px', borderRadius: 10, background: '#EEF1F4', color: 'var(--navy)', fontSize: 13, fontWeight: 600 }}>
+          Unsecured loan: property details are not needed.
+        </div>
+      )}
+      <div className="card">
+        <TriRow {...prop} disabled={unsecured} />
+      </div>
+      <Choice {...field('property_type')} disabled={off} />
+      {!off && <OtherBox field={field} of="property_type" />}
+      <div className="card">
+        <TriRow {...field('property_documents')} disabled={off} />
+      </div>
     </>
   )
 }
@@ -501,6 +530,7 @@ function AssessStep({ field }: { field: F }) {
         </div>
       </div>
       <Choice {...field('likely_product')} kind="hs" />
+      <OtherBox field={field} of="likely_product" />
       <TextField id="f-lender" {...field('potential_lender')} placeholder="Type or pick from lender list" />
     </>
   )
@@ -508,7 +538,7 @@ function AssessStep({ field }: { field: F }) {
 
 const REC_COLOR: Record<string, string> = { Proceed: '#1F6F4A', Hold: '#9A5B00', Reject: '#9F1D1D' }
 
-function DecideStep({ field }: { field: F }) {
+function DecideStep({ field, proceedToLead }: { field: F; proceedToLead: boolean }) {
   const rec = field('sm_recommendation')
   const date = field('next_action_date')
   const comments = field('reason_comments')
@@ -550,6 +580,14 @@ function DecideStep({ field }: { field: F }) {
             )
           })}
         </div>
+        {proceedToLead && (
+          <div
+            role="status"
+            style={{ marginTop: 8, padding: '8px 12px', borderRadius: 10, background: '#E3F1E9', color: 'var(--good)', fontSize: 13, fontWeight: 600 }}
+          >
+            Proceed: when you save, this prospect is pushed to Zoho as a Lead.
+          </div>
+        )}
       </div>
       {/* No dropdown for Status in the Excel, so it is typed. */}
       <TextField id="f-status" {...field('status')} placeholder="Type the status" />
@@ -758,6 +796,7 @@ function SaveFooter({
   catalog,
   onSaved,
   fallbackRef,
+  proceedToLead,
 }: {
   stepIdx: number
   go: (i: number) => void
@@ -769,11 +808,13 @@ function SaveFooter({
   catalog: FieldCatalog
   onSaved: (s: Saved) => void
   fallbackRef: string
+  proceedToLead: boolean // the recommendation is Proceed and the prospect is not a Lead yet
 }) {
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [askReason, setAskReason] = useState(false)
   const [matches, setMatches] = useState<DuplicateMatch[] | null>(null)
+  const [confirmLead, setConfirmLead] = useState(false)
   const last = stepIdx === STEPS.length - 1
 
   async function save(dup?: { choice: 'overwrite' | 'create_new'; id?: string }, reasonOverride?: string) {
@@ -822,19 +863,32 @@ function SaveFooter({
       else if (d?.code === 'DUPLICATE_OWN' && d.matches) setMatches(d.matches)
       else if (d?.code === 'INVALID_VALUES' && d.errors) {
         const label = (k: string) => catalog.fields.find((f) => f.key === k)?.label ?? k
-        setError(Object.entries(d.errors).map(([k, msg]) => `${label(k)}: ${msg}`).join(' · '))
+        const entries = Object.entries(d.errors)
+        const same = new Set(entries.map(([, msg]) => msg)).size === 1 // e.g. "enter at least Business Name, POC or Mobile"
+        setError(same ? `${entries[0][1][0].toUpperCase()}${entries[0][1].slice(1)}.` : entries.map(([k, msg]) => `${label(k)}: ${msg}`).join(' · '))
       } else setError(d?.message ?? e.message)
     } finally {
       setBusy(null)
     }
   }
 
+  // Recommending "Proceed" sends the prospect to Zoho as a Lead, so ask before saving.
+  const requestSave = () => (proceedToLead ? setConfirmLead(true) : void save())
+
   return (
     <>
       {error && (
         <div style={{ padding: '0 16px 10px', background: 'var(--ground)' }}>
-          <div className="err" role="alert">
-            {error}
+          <div className="err" role="alert" style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+            <span style={{ flex: 1 }}>{error}</span>
+            <button
+              type="button"
+              aria-label="Dismiss this message"
+              onClick={() => setError(null)}
+              style={{ flex: 'none', width: 28, height: 28, marginTop: -4, marginRight: -6, border: 'none', background: 'transparent', color: 'inherit', fontSize: 20, lineHeight: 1, fontWeight: 700 }}
+            >
+              ×
+            </button>
           </div>
         </div>
       )}
@@ -842,7 +896,7 @@ function SaveFooter({
         <div className="inner" style={{ flexDirection: 'column', gap: 8 }}>
           {/* Nothing more to enter? Save from any step; no need to walk through the remaining ones. */}
           {!last && (
-            <button type="button" className="save-now" disabled={!!busy} onClick={() => save()}>
+            <button type="button" className="save-now" disabled={!!busy} onClick={() => requestSave()}>
               {busy ?? 'Nothing more to add? Save meeting now'}
             </button>
           )}
@@ -854,13 +908,39 @@ function SaveFooter({
               className="btn primary"
               style={{ flex: 1 }}
               disabled={!!busy}
-              onClick={() => (last ? save() : go(stepIdx + 1))}
+              onClick={() => (last ? requestSave() : go(stepIdx + 1))}
             >
               {busy && last ? busy : last ? 'Save meeting' : `Next · ${TABS[stepIdx + 1]}`} {!busy && <IconArrow />}
             </button>
           </div>
         </div>
       </div>
+
+      {confirmLead && (
+        <div className="sheet-bg" role="dialog" aria-modal="true" aria-labelledby="lead-title">
+          <div className="sheet">
+            <div className="sheet-title" id="lead-title">
+              Push this prospect to Leads?
+            </div>
+            <div className="muted" style={{ fontSize: 14 }}>
+              You recommended this prospect as <strong>Proceed</strong>. When you save, this meeting is saved and the
+              prospect is pushed to Zoho as a Lead.
+            </div>
+            <button
+              className="btn primary"
+              onClick={() => {
+                setConfirmLead(false)
+                void save()
+              }}
+            >
+              Yes, save
+            </button>
+            <button className="btn ghost" onClick={() => setConfirmLead(false)}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {askReason && (
         <ReasonSheet
@@ -968,9 +1048,9 @@ function DuplicateSheet({
           <div key={m.id} className="card" style={{ padding: '4px 14px 14px' }}>
             {[
               ['Business', m.business_name],
-              ['Promoter', m.promoter],
+              ['POC', m.promoter],
               ['Loan type', m.purpose || m.likely_product],
-              ['Loan required', m.loan_required ? `₹${m.loan_required} L` : null],
+              ['Loan required', m.loan_required ? `₹${formatINR(m.loan_required)}` : null],
               ['Mobile', m.mobile],
               ['Last meeting', relativeDay(m.last_meeting_at)],
             ].map(([k, val]) => (

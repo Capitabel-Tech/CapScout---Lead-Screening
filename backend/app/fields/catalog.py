@@ -1,4 +1,4 @@
-"""The 44-field catalogue (from the client's Excel) and value validation.
+"""The field catalogue (the client's Excel plus their later changes) and value validation.
 
 V1 reads the catalogue from fields_v1.json, which scripts/extract_fields.py
 generates from the Excel file. The same data is seeded into the
@@ -47,6 +47,28 @@ class Catalog:
     @property
     def progress_total(self) -> int:
         return sum(f.counts_toward_progress for f in self.fields)
+
+
+# Fields that are not asked for some answers, so they cannot count towards "fields collected":
+# {field: [(other_field, the_value_of_other_field_that_hides_it), ...]}.
+HIDDEN_WHEN: dict[str, list[tuple[str, str]]] = {
+    "source_name": [("source_type", "Direct")],
+    "source_contact": [("source_type", "Direct")],
+    # No security offered, or no property: the property questions do not apply.
+    "property_available": [("secured_unsecured", "Unsecured")],
+    "property_type": [("property_available", "No"), ("secured_unsecured", "Unsecured")],
+    "property_documents": [("property_available", "No"), ("secured_unsecured", "Unsecured")],
+}
+
+
+def progress_keys_for(values: dict[str, Any] | None) -> set[str]:
+    """The progress fields that apply to a customer with these current values."""
+    values = values or {}
+    return {
+        f.key
+        for f in load_catalog().fields
+        if f.counts_toward_progress and not any(values.get(other) == hides for other, hides in HIDDEN_WHEN.get(f.key, []))
+    }
 
 
 @lru_cache

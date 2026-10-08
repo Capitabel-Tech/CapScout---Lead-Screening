@@ -36,7 +36,7 @@ RAW_FIELDS = [
     raw("Latitude", "Address - Latitude", "double"),
     raw("Description", "Description", "textarea"),
     raw("Loan_Type", "Loan Type", "picklist", options=["-None-", "LAP", "Business Loan", "Working Capital"], custom=True),
-    raw("Loan_Required", "Loan Required (₹L)", "decimal", custom=True),
+    raw("Loan_Required", "Loan Required (₹)", "decimal", custom=True),
     raw("Purpose", "Purpose", "picklist", options=["Working Capital", "Expansion"], custom=True),
     raw("Created_Time", "Created Time", "datetime", create=False),
     raw("Hidden_Thing", "Read only", "text", read_only=True),
@@ -82,7 +82,7 @@ def test_form_is_prefilled_from_what_the_app_collected(client, make_staff):
         resolve_pending(s, get_settings(), lookup=lambda cfg, lat, lng: {"place": "Kukatpally, Hyderabad", "area": "Hyderabad"})
     form = _form(client, a, cid)
 
-    assert form["Last_Name"]["value"] == "Ramesh Kumar" and form["Last_Name"]["prefilled_from"] == "Promoter"
+    assert form["Last_Name"]["value"] == "Ramesh Kumar" and form["Last_Name"]["prefilled_from"] == "POC (Point of Contact)"
     assert form["Company"]["value"] == "RK Traders"
     assert form["Mobile"]["value"] == "9876543210"
     assert form["City"]["value"] == "Hyderabad"
@@ -221,11 +221,41 @@ def test_the_description_block_stays_current_after_later_meetings(client, make_s
     fake = FakeZoho()
     run(fake)
     lead_id = next(iter(fake.leads))
-    assert "Loan Required (₹L): 50" in fake.leads[lead_id]["Description"]
+    assert "Loan Required (₹): 50" in fake.leads[lead_id]["Description"]
 
     # Meeting 2: the loan goes 50 -> 60. Zoho has no box for it yet, but the Description must follow.
     _post(client, a, cid, _meeting({"loan_required": "60"}, started="2026-09-03T10:00:00+05:30"))
     run(fake)
     description = fake.leads[lead_id]["Description"]
     assert description.startswith("My call note.")
-    assert "Loan Required (₹L): 60" in description and "Loan Required (₹L): 50" not in description
+    assert "Loan Required (₹): 60" in description and "Loan Required (₹): 50" not in description
+
+
+def test_new_lead_goes_straight_to_zoho_without_a_meeting(client, make_staff, db):
+    _, a = make_staff("A1")
+    form = client.get("/api/customers/-/lead-form", headers=a)
+    assert form.status_code == 200 and form.json()["customer"] is None
+    assert all(f["value"] is None for f in form.json()["fields"])
+
+    bad = client.post("/api/customers/-/new-lead", json={"lead_values": {"Company": "X"}}, headers=a)
+    assert bad.status_code == 422 and bad.json()["detail"]["errors"]["Last_Name"] == "required"
+
+    r = client.post(
+        "/api/customers/-/new-lead",
+        json={"lead_values": {"Last_Name": "Asha", "Company": "Asha Foods", "Mobile": "9123456789", "Loan_Type": "LAP"}},
+        headers=a,
+    )
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["conversion_status"] == "CONVERTING" and body["meeting_count"] == 0
+    assert body["business_name"] == "Asha Foods" and body["promoter"] == "Asha" and body["mobile"] == "9123456789"
+
+    fake = FakeZoho()
+    run(fake)
+    assert next(iter(fake.leads.values())) == {
+        "Last_Name": "Asha", "Company": "Asha Foods", "Mobile": "9123456789", "Loan_Type": "LAP",
+    }
+    assert client.get(f"/api/customers/{body['id']}", headers=a).json()["conversion_status"] == "CONVERTED"
+
+    again = client.post("/api/customers/-/new-lead", json={"lead_values": {"Last_Name": "Asha 2", "Mobile": "9123456789"}}, headers=a)
+    assert again.status_code == 409 and again.json()["detail"]["code"] == "DUPLICATE_OWN"

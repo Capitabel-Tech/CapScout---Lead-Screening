@@ -27,8 +27,8 @@ OUT_PATH = Path(__file__).resolve().parents[1] / "app" / "fields" / "fields_v1.j
 SECTIONS = [
     ("lead", "Lead & source"),
     ("business", "Business & loan need"),
-    ("money", "Financials & documents"),
-    ("property", "Property & credit flags"),
+    ("money", "Financials, documents & credit flags"),
+    ("property", "Property details"),
     ("assess", "Screening assessment"),
     ("decide", "Recommendation & next action"),
 ]
@@ -84,6 +84,110 @@ FIELD_MAP: dict[str, tuple[str, str, str, str | None, str | None]] = {
     "Next Action Date": ("next_action_date", "date", "decide", None, None),
     "Reason/Comments": ("reason_comments", "long_text", "decide", None, None),
 }
+
+
+# --- the client's own changes to the Excel list (decided 2026-10-08) -----------------------------
+# Applied on top of the Excel so re-running this script never undoes them. Keys never change
+# (stored values and Zoho mappings keep working); only labels, options and the list of fields do.
+RELABEL = {
+    "promoter": "POC (Point of Contact)",
+    # Amounts are typed in full rupees (with commas), no longer in lakhs.
+    "loan_required": "Loan Required (₹)",
+    "annual_turnover": "Average Monthly Turnover (₹)",
+    "monthly_banking": "Monthly Banking (₹)",
+    "existing_debt": "Existing Debt (₹)",
+    "monthly_emi": "Monthly EMI (₹)",
+}
+RUPEE_FIELDS = ["loan_required", "annual_turnover", "monthly_banking", "existing_debt", "monthly_emi"]
+REMOVE_OPTIONS = {
+    "constitution": ["Ltd"],
+    "purpose": ["LAP", "Business Loan"],
+}
+ADD_OPTIONS = {"constitution": ["Other"]}
+REMOVE_FIELDS = ["monthly_surplus", "property_value", "existing_mortgage"]
+# The credit red flags move from the Property step to the Money step: Financials, red flags, then documents.
+MOVE_TO_MONEY = ["overdue", "bounces", "settlement_write_off", "litigation_dispute"]
+
+
+def _text_other(of: str, label: str, section: str) -> dict:
+    """The "type it here" box shown when the dropdown `of` is set to "Other" (not counted in progress)."""
+    return {
+        "after": of,
+        "field": {
+            "key": f"{of}_other", "label": f"{label} (Other)", "field_type": "text", "options": None,
+            "unit": None, "section": section, "counts_toward_progress": False, "system_source": None,
+        },
+    }
+
+
+# Fixed positions for the new fields (they must stay the same forever: the database keeps them unique).
+NEW_POSITIONS = {
+    "constitution_other": 45,
+    "source_type_other": 46,
+    "purpose_other": 47,
+    "likely_product_other": 48,
+    "property_type": 49,
+    "property_type_other": 50,
+    "property_documents": 51,
+}
+
+# New fields, in the order they are added ("after" can be a field added just before it).
+ADD_FIELDS = [
+    _text_other("source_type", "Source Type", "lead"),
+    _text_other("constitution", "Constitution", "business"),
+    _text_other("purpose", "Purpose", "business"),
+    _text_other("likely_product", "Likely Product", "assess"),
+    {
+        "after": "property_available",
+        "field": {
+            "key": "property_type", "label": "Property Type", "field_type": "single_select",
+            "options": ["Residential", "Commercial", "Industrial", "Land", "Other"],
+            "unit": None, "section": "property", "counts_toward_progress": True, "system_source": None,
+        },
+    },
+    _text_other("property_type", "Property Type", "property"),
+    {
+        "after": "property_type_other",
+        "field": {
+            "key": "property_documents", "label": "Property Documents Available", "field_type": "single_select",
+            "options": ["Yes", "No", "Unknown"],
+            "unit": None, "section": "property", "counts_toward_progress": True, "system_source": None,
+        },
+    },
+]
+
+
+def apply_client_changes(fields: list[dict]) -> list[dict]:
+    fields = [f for f in fields if f["key"] not in REMOVE_FIELDS]
+    for f in fields:
+        if f["key"] in RELABEL:
+            f["label"] = RELABEL[f["key"]]
+        if f["key"] in RUPEE_FIELDS:
+            f["unit"] = "₹"
+        if f["key"] in REMOVE_OPTIONS:
+            gone = REMOVE_OPTIONS[f["key"]]
+            missing = [o for o in gone if o not in f["options"]]
+            assert not missing, f"{f['key']}: option(s) {missing} not in the Excel"
+            f["options"] = [o for o in f["options"] if o not in gone]
+        if f["key"] in ADD_OPTIONS:
+            f["options"] = f["options"] + ADD_OPTIONS[f["key"]]
+    # Credit flags go after the amounts; Litigation/Dispute (typed) goes last, after the documents.
+    for keys, anchor in ((MOVE_TO_MONEY[:3], "monthly_emi"), (MOVE_TO_MONEY[3:], "bank_statements")):
+        moved = [f for k in keys for f in fields if f["key"] == k]
+        fields = [f for f in fields if f not in moved]
+        at = next(i for i, f in enumerate(fields) if f["key"] == anchor) + 1
+        for f in moved:
+            f["section"] = "money"
+        fields[at:at] = moved
+    for add in ADD_FIELDS:
+        at = next(i for i, f in enumerate(fields) if f["key"] == add["after"]) + 1
+        fields.insert(at, {"excel_column": "new", "position": NEW_POSITIONS[add["field"]["key"]], **add["field"]})
+    # Screen order inside each step follows the list order.
+    counter: dict[str, int] = {}
+    for f in fields:
+        counter[f["section"]] = counter.get(f["section"], 0) + 1
+        f["display_order"] = counter[f["section"]]
+    return fields
 
 
 def dropdowns_by_column(ws) -> dict[str, list[str]]:
@@ -149,6 +253,7 @@ def main() -> int:
             }
         )
 
+    fields = apply_client_changes(fields)
     out = {
         "version": 1,
         "source": EXCEL_PATH.name,

@@ -1,3 +1,4 @@
+import { formatINR } from '../format'
 import { useEffect, useState } from 'react'
 import { api, post, type Meeting, type SyncStatus } from '../api'
 import { fieldLabel, useFieldCatalog } from '../fields'
@@ -15,6 +16,8 @@ const SYNC: Record<SyncStatus, { label: string; cls: string }> = {
 
 export default function MeetingHistory({ customerId, reloadKey }: { customerId: string; reloadKey?: unknown }) {
   const catalog = useFieldCatalog()
+  // Rupee amounts are shown with commas (12,34,567).
+  const show = (key: string, value: string) => (catalog?.fields.find((f) => f.key === key)?.unit === '₹' ? `₹${formatINR(value)}` : value)
   const [items, setItems] = useState<Meeting[] | null>(null)
   const [open, setOpen] = useState<string | null>(null)
   const [retrying, setRetrying] = useState<string | null>(null)
@@ -122,10 +125,10 @@ export default function MeetingHistory({ customerId, reloadKey }: { customerId: 
                         <span className="v">
                           {c.old && (
                             <>
-                              <s style={{ color: 'var(--muted)', fontWeight: 500 }}>{c.old}</s> →{' '}
+                              <s style={{ color: 'var(--muted)', fontWeight: 500 }}>{show(c.field, c.old)}</s> →{' '}
                             </>
                           )}
-                          {c.new ?? <em style={{ color: 'var(--muted)' }}>cleared</em>}
+                          {c.new ? show(c.field, c.new) : <em style={{ color: 'var(--muted)' }}>cleared</em>}
                         </span>
                       </li>
                     ))}

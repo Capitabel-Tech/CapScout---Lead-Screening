@@ -9,6 +9,9 @@ from app.routers import auth, customers, geo, meetings, meta
 from app.zoho.worker import SyncWorker
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s [%(name)s] %(message)s")
+# The Zoho connection string (a secret) is part of the request address, so the HTTP libraries must not log it.
+for _name in ("httpx", "httpx2", "httpcore", "mcp"):
+    logging.getLogger(_name).setLevel(logging.WARNING)
 
 
 @asynccontextmanager

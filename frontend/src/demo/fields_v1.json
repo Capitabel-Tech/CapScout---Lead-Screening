@@ -14,12 +14,12 @@
     },
     {
       "key": "money",
-      "label": "Financials & documents",
+      "label": "Financials, documents & credit flags",
       "display_order": 3
     },
     {
       "key": "property",
-      "label": "Property & credit flags",
+      "label": "Property details",
       "display_order": 4
     },
     {
@@ -93,6 +93,19 @@
       "system_source": null
     },
     {
+      "excel_column": "new",
+      "position": 46,
+      "key": "source_type_other",
+      "label": "Source Type (Other)",
+      "field_type": "text",
+      "options": null,
+      "unit": null,
+      "section": "lead",
+      "counts_toward_progress": false,
+      "system_source": null,
+      "display_order": 5
+    },
+    {
       "key": "source_name",
       "label": "Source Name",
       "excel_column": "E",
@@ -101,7 +114,7 @@
       "options": null,
       "unit": null,
       "section": "lead",
-      "display_order": 5,
+      "display_order": 6,
       "counts_toward_progress": true,
       "system_source": null
     },
@@ -114,7 +127,7 @@
       "options": null,
       "unit": null,
       "section": "lead",
-      "display_order": 6,
+      "display_order": 7,
       "counts_toward_progress": true,
       "system_source": null
     },
@@ -127,20 +140,20 @@
       "options": null,
       "unit": null,
       "section": "lead",
-      "display_order": 7,
+      "display_order": 8,
       "counts_toward_progress": true,
       "system_source": null
     },
     {
       "key": "promoter",
-      "label": "Promoter",
+      "label": "POC (Point of Contact)",
       "excel_column": "H",
       "position": 8,
       "field_type": "text",
       "options": null,
       "unit": null,
       "section": "lead",
-      "display_order": 8,
+      "display_order": 9,
       "counts_toward_progress": true,
       "system_source": null
     },
@@ -153,7 +166,7 @@
       "options": null,
       "unit": null,
       "section": "lead",
-      "display_order": 9,
+      "display_order": 10,
       "counts_toward_progress": true,
       "system_source": null
     },
@@ -166,7 +179,7 @@
       "options": null,
       "unit": null,
       "section": "lead",
-      "display_order": 10,
+      "display_order": 11,
       "counts_toward_progress": true,
       "system_source": null
     },
@@ -181,13 +194,26 @@
         "Partnership",
         "LLP",
         "Pvt Ltd",
-        "Ltd"
+        "Other"
       ],
       "unit": null,
       "section": "business",
       "display_order": 1,
       "counts_toward_progress": true,
       "system_source": null
+    },
+    {
+      "excel_column": "new",
+      "position": 45,
+      "key": "constitution_other",
+      "label": "Constitution (Other)",
+      "field_type": "text",
+      "options": null,
+      "unit": null,
+      "section": "business",
+      "counts_toward_progress": false,
+      "system_source": null,
+      "display_order": 2
     },
     {
       "key": "industry",
@@ -198,7 +224,7 @@
       "options": null,
       "unit": null,
       "section": "business",
-      "display_order": 2,
+      "display_order": 3,
       "counts_toward_progress": true,
       "system_source": null
     },
@@ -211,20 +237,20 @@
       "options": null,
       "unit": "Years",
       "section": "business",
-      "display_order": 3,
+      "display_order": 4,
       "counts_toward_progress": true,
       "system_source": null
     },
     {
       "key": "loan_required",
-      "label": "Loan Required (₹L)",
+      "label": "Loan Required (₹)",
       "excel_column": "N",
       "position": 14,
       "field_type": "number",
       "options": null,
-      "unit": "₹L",
+      "unit": "₹",
       "section": "business",
-      "display_order": 4,
+      "display_order": 5,
       "counts_toward_progress": true,
       "system_source": null
     },
@@ -238,15 +264,26 @@
         "Working Capital",
         "Expansion",
         "Capex",
-        "LAP",
-        "Business Loan",
         "Other"
       ],
       "unit": null,
       "section": "business",
-      "display_order": 5,
+      "display_order": 6,
       "counts_toward_progress": true,
       "system_source": null
+    },
+    {
+      "excel_column": "new",
+      "position": 47,
+      "key": "purpose_other",
+      "label": "Purpose (Other)",
+      "field_type": "text",
+      "options": null,
+      "unit": null,
+      "section": "business",
+      "counts_toward_progress": false,
+      "system_source": null,
+      "display_order": 7
     },
     {
       "key": "urgency",
@@ -262,7 +299,7 @@
       ],
       "unit": null,
       "section": "business",
-      "display_order": 6,
+      "display_order": 8,
       "counts_toward_progress": true,
       "system_source": null
     },
@@ -279,18 +316,18 @@
       ],
       "unit": null,
       "section": "business",
-      "display_order": 7,
+      "display_order": 9,
       "counts_toward_progress": true,
       "system_source": null
     },
     {
       "key": "annual_turnover",
-      "label": "Annual Turnover (₹L)",
+      "label": "Average Monthly Turnover (₹)",
       "excel_column": "R",
       "position": 18,
       "field_type": "number",
       "options": null,
-      "unit": "₹L",
+      "unit": "₹",
       "section": "money",
       "display_order": 1,
       "counts_toward_progress": true,
@@ -298,53 +335,91 @@
     },
     {
       "key": "monthly_banking",
-      "label": "Monthly Banking (₹L)",
+      "label": "Monthly Banking (₹)",
       "excel_column": "S",
       "position": 19,
       "field_type": "number",
       "options": null,
-      "unit": "₹L",
+      "unit": "₹",
       "section": "money",
       "display_order": 2,
       "counts_toward_progress": true,
       "system_source": null
     },
     {
-      "key": "monthly_surplus",
-      "label": "Monthly Surplus (₹L)",
-      "excel_column": "T",
-      "position": 20,
+      "key": "existing_debt",
+      "label": "Existing Debt (₹)",
+      "excel_column": "U",
+      "position": 21,
       "field_type": "number",
       "options": null,
-      "unit": "₹L",
+      "unit": "₹",
       "section": "money",
       "display_order": 3,
       "counts_toward_progress": true,
       "system_source": null
     },
     {
-      "key": "existing_debt",
-      "label": "Existing Debt (₹L)",
-      "excel_column": "U",
-      "position": 21,
+      "key": "monthly_emi",
+      "label": "Monthly EMI (₹)",
+      "excel_column": "V",
+      "position": 22,
       "field_type": "number",
       "options": null,
-      "unit": "₹L",
+      "unit": "₹",
       "section": "money",
       "display_order": 4,
       "counts_toward_progress": true,
       "system_source": null
     },
     {
-      "key": "monthly_emi",
-      "label": "Monthly EMI (₹L)",
-      "excel_column": "V",
-      "position": 22,
-      "field_type": "number",
-      "options": null,
-      "unit": "₹L",
+      "key": "overdue",
+      "label": "Overdue",
+      "excel_column": "AC",
+      "position": 29,
+      "field_type": "single_select",
+      "options": [
+        "Yes",
+        "No",
+        "Unknown"
+      ],
+      "unit": null,
       "section": "money",
       "display_order": 5,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "bounces",
+      "label": "Bounces",
+      "excel_column": "AD",
+      "position": 30,
+      "field_type": "single_select",
+      "options": [
+        "Yes",
+        "No",
+        "Unknown"
+      ],
+      "unit": null,
+      "section": "money",
+      "display_order": 6,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "settlement_write_off",
+      "label": "Settlement/Write-off",
+      "excel_column": "AE",
+      "position": 31,
+      "field_type": "single_select",
+      "options": [
+        "Yes",
+        "No",
+        "Unknown"
+      ],
+      "unit": null,
+      "section": "money",
+      "display_order": 7,
       "counts_toward_progress": true,
       "system_source": null
     },
@@ -361,7 +436,7 @@
       ],
       "unit": null,
       "section": "money",
-      "display_order": 6,
+      "display_order": 8,
       "counts_toward_progress": true,
       "system_source": null
     },
@@ -378,7 +453,7 @@
       ],
       "unit": null,
       "section": "money",
-      "display_order": 7,
+      "display_order": 9,
       "counts_toward_progress": true,
       "system_source": null
     },
@@ -395,7 +470,20 @@
       ],
       "unit": null,
       "section": "money",
-      "display_order": 8,
+      "display_order": 10,
+      "counts_toward_progress": true,
+      "system_source": null
+    },
+    {
+      "key": "litigation_dispute",
+      "label": "Litigation/Dispute",
+      "excel_column": "AF",
+      "position": 32,
+      "field_type": "text",
+      "options": null,
+      "unit": null,
+      "section": "money",
+      "display_order": 11,
       "counts_toward_progress": true,
       "system_source": null
     },
@@ -417,98 +505,53 @@
       "system_source": null
     },
     {
-      "key": "property_value",
-      "label": "Property Value (₹L)",
-      "excel_column": "AA",
-      "position": 27,
-      "field_type": "number",
-      "options": null,
-      "unit": "₹L",
-      "section": "property",
-      "display_order": 2,
-      "counts_toward_progress": true,
-      "system_source": null
-    },
-    {
-      "key": "existing_mortgage",
-      "label": "Existing Mortgage",
-      "excel_column": "AB",
-      "position": 28,
+      "excel_column": "new",
+      "position": 49,
+      "key": "property_type",
+      "label": "Property Type",
       "field_type": "single_select",
       "options": [
-        "Yes",
-        "No",
-        "Unknown"
+        "Residential",
+        "Commercial",
+        "Industrial",
+        "Land",
+        "Other"
       ],
       "unit": null,
       "section": "property",
-      "display_order": 3,
       "counts_toward_progress": true,
-      "system_source": null
+      "system_source": null,
+      "display_order": 2
     },
     {
-      "key": "overdue",
-      "label": "Overdue",
-      "excel_column": "AC",
-      "position": 29,
-      "field_type": "single_select",
-      "options": [
-        "Yes",
-        "No",
-        "Unknown"
-      ],
-      "unit": null,
-      "section": "property",
-      "display_order": 4,
-      "counts_toward_progress": true,
-      "system_source": null
-    },
-    {
-      "key": "bounces",
-      "label": "Bounces",
-      "excel_column": "AD",
-      "position": 30,
-      "field_type": "single_select",
-      "options": [
-        "Yes",
-        "No",
-        "Unknown"
-      ],
-      "unit": null,
-      "section": "property",
-      "display_order": 5,
-      "counts_toward_progress": true,
-      "system_source": null
-    },
-    {
-      "key": "settlement_write_off",
-      "label": "Settlement/Write-off",
-      "excel_column": "AE",
-      "position": 31,
-      "field_type": "single_select",
-      "options": [
-        "Yes",
-        "No",
-        "Unknown"
-      ],
-      "unit": null,
-      "section": "property",
-      "display_order": 6,
-      "counts_toward_progress": true,
-      "system_source": null
-    },
-    {
-      "key": "litigation_dispute",
-      "label": "Litigation/Dispute",
-      "excel_column": "AF",
-      "position": 32,
+      "excel_column": "new",
+      "position": 50,
+      "key": "property_type_other",
+      "label": "Property Type (Other)",
       "field_type": "text",
       "options": null,
       "unit": null,
       "section": "property",
-      "display_order": 7,
+      "counts_toward_progress": false,
+      "system_source": null,
+      "display_order": 3
+    },
+    {
+      "excel_column": "new",
+      "position": 51,
+      "key": "property_documents",
+      "label": "Property Documents Available",
+      "field_type": "single_select",
+      "options": [
+        "Yes",
+        "No",
+        "Unknown"
+      ],
+      "unit": null,
+      "section": "property",
       "counts_toward_progress": true,
-      "system_source": null
+      "system_source": null,
+      "display_order": 4
     },
     {
       "key": "documents_readiness",
@@ -616,6 +659,19 @@
       "system_source": null
     },
     {
+      "excel_column": "new",
+      "position": 48,
+      "key": "likely_product_other",
+      "label": "Likely Product (Other)",
+      "field_type": "text",
+      "options": null,
+      "unit": null,
+      "section": "assess",
+      "counts_toward_progress": false,
+      "system_source": null,
+      "display_order": 7
+    },
+    {
       "key": "potential_lender",
       "label": "Potential Lender",
       "excel_column": "AM",
@@ -624,7 +680,7 @@
       "options": null,
       "unit": null,
       "section": "assess",
-      "display_order": 7,
+      "display_order": 8,
       "counts_toward_progress": true,
       "system_source": null
     },
@@ -663,7 +719,7 @@
       ],
       "unit": null,
       "section": "decide",
-      "display_order": 3,
+      "display_order": 2,
       "counts_toward_progress": true,
       "system_source": null
     },
@@ -676,7 +732,7 @@
       "options": null,
       "unit": null,
       "section": "decide",
-      "display_order": 4,
+      "display_order": 3,
       "counts_toward_progress": true,
       "system_source": null
     },
@@ -689,7 +745,7 @@
       "options": null,
       "unit": null,
       "section": "decide",
-      "display_order": 2,
+      "display_order": 4,
       "counts_toward_progress": true,
       "system_source": null
     },

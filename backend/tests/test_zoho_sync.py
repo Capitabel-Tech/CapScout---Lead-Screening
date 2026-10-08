@@ -147,7 +147,7 @@ def test_event_description_has_staff_gps_and_changes(client, make_staff, db):
     desc = next(iter(fake.events.values()))["Description"]
     assert "Staff: Staff A1" in desc
     assert "https://www.google.com/maps?q=17.385044,78.486671" in desc
-    assert "- Loan Required (₹L): 25" in desc
+    assert "- Loan Required (₹): 25" in desc
 
 
 def test_no_gps_reason_is_sent(client, make_staff, db):
@@ -165,7 +165,7 @@ def test_no_gps_reason_is_sent(client, make_staff, db):
 def test_conversion_creates_lead_links_old_meetings_and_moves_tab(client, make_staff, db):
     _, a = make_staff("A1")
     cid, mid = _setup_lead(client, a)
-    _post(client, a, cid, _meeting({"purpose": "LAP"}, started="2026-09-02T10:00:00+05:30"))
+    _post(client, a, cid, _meeting({"purpose": "Expansion"}, started="2026-09-02T10:00:00+05:30"))
     fake = FakeZoho()
     run(fake)  # both meetings -> Zoho, still no Lead
     assert len(fake.events) == 2 and not fake.leads
@@ -176,7 +176,7 @@ def test_conversion_creates_lead_links_old_meetings_and_moves_tab(client, make_s
     assert len(fake.leads) == 1
     lead_id, lead = next(iter(fake.leads.items()))
     assert lead["Last_Name"] == "Ramesh Kumar" and lead["Company"] == "RK Traders" and lead["Mobile"] == "9876543210"
-    assert "Purpose: LAP" in lead["Description"]
+    assert "Purpose: Expansion" in lead["Description"]
     for event in fake.events.values():  # both earlier meetings now linked to the Lead
         assert event["What_Id"] == {"id": lead_id} and event["$se_module"] == "Leads"
     c = _customer(db, cid)
@@ -204,7 +204,7 @@ def test_meeting_after_conversion_is_linked_and_updates_the_lead(client, make_st
     update = fake.calls_to("updateRecord", "Leads")[-1]["body"]["data"][0]
     # The mapped field this meeting changed, plus the app's own Description block. Nothing else.
     assert set(update) == {"Company", "Description"} and update["Company"] == "RK Traders Pvt Ltd"
-    assert "Business Name: RK Traders Pvt Ltd" in update["Description"] and "Monthly Banking (₹L): 45" in update["Description"]
+    assert "Business Name: RK Traders Pvt Ltd" in update["Description"] and "Monthly Banking (₹): 45" in update["Description"]
     assert len(fake.leads) == 1  # updated, never duplicated
 
 
@@ -416,14 +416,14 @@ def test_plain_text_answers_from_zoho_are_reported_as_errors():
 def test_description_block_refresh_keeps_text_staff_wrote_around_it():
     from app.zoho.payloads import BLOCK_END, BLOCK_START, merge_description
 
-    new_block = f"{BLOCK_START}\nMSME-0001\n\nLoan Required (₹L): 60\n{BLOCK_END}"
-    old_block = f"{BLOCK_START}\nMSME-0001\n\nLoan Required (₹L): 50\n{BLOCK_END}"
+    new_block = f"{BLOCK_START}\nMSME-0001\n\nLoan Required (₹): 60\n{BLOCK_END}"
+    old_block = f"{BLOCK_START}\nMSME-0001\n\nLoan Required (₹): 50\n{BLOCK_END}"
     # staff notes before and after the block survive; only the block changes
     merged = merge_description(f"Called twice.\n\n{old_block}\n\nFollow up Friday.", new_block)
     assert merged == f"Called twice.\n\n{new_block}\n\nFollow up Friday."
     # a Description staff cleared on purpose is not refilled
     assert merge_description(None, new_block) is None and merge_description("  ", new_block) is None
     # an old unedited snapshot written by the app is replaced whole
-    assert merge_description("Field Meeting CRM · MSME-0005\n\nLoan Required (₹L): 50", new_block) == new_block
+    assert merge_description("Field Meeting CRM · MSME-0005\n\nLoan Required (₹): 50", new_block) == new_block
     # staff removed the block and wrote their own text: leave it alone
     assert merge_description("Only my own notes", new_block) is None

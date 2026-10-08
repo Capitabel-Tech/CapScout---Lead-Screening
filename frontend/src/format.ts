@@ -2,6 +2,12 @@
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
+// 1234567 -> "12,34,567" (Indian grouping). Amounts are stored as plain digits (rupees) and shown with commas.
+export function formatINR(value: string | number | null | undefined): string {
+  const digits = String(value ?? '').replace(/[^\d]/g, '')
+  return digits ? Number(digits).toLocaleString('en-IN') : ''
+}
+
 export function isoDate(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }

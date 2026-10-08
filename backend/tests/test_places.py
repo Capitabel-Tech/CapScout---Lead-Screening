@@ -87,7 +87,7 @@ def test_location_is_never_typed_by_staff(client, make_staff, db):
     assert r.status_code == 201
     cid = r.json()["customer_id"]
     assert "location" not in client.get(f"/api/customers/{cid}", headers=a).json()["values"]  # ignored
-    r = _post(client, a, cid, _meeting({"location": "Typed later", "purpose": "LAP"}, started="2026-09-03T10:00:00+05:30"))
+    r = _post(client, a, cid, _meeting({"location": "Typed later", "purpose": "Expansion"}, started="2026-09-03T10:00:00+05:30"))
     assert r.status_code == 201 and [c["field"] for c in r.json()["changes"]] == ["purpose"]  # only the real change
     assert "location" not in client.get(f"/api/customers/{cid}", headers=a).json()["values"]
 

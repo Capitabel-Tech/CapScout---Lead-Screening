@@ -180,6 +180,6 @@ export type ZohoFormField = {
 }
 
 export type ConvertForm = {
-  customer: { id: string; lead_ref: string; name: string | null }
+  customer: { id: string; lead_ref: string; name: string | null } | null
   fields: ZohoFormField[]
 }

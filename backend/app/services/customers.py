@@ -15,7 +15,7 @@ from typing import Any
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
-from app.fields.catalog import FieldValueError, clean_value, load_catalog
+from app.fields.catalog import FieldValueError, clean_value, progress_keys_for
 from app.models import AuditLog, Customer, Staff
 
 IDENTITY_KEYS = ("business_name", "promoter", "mobile")
@@ -88,7 +88,7 @@ def apply_values(customer: Customer, cleaned: dict[str, Any]) -> list[dict[str, 
 
     # Assign a new dict so SQLAlchemy notices the JSONB change.
     customer.current_values = current
-    progress_keys = {f.key for f in load_catalog().fields if f.counts_toward_progress}
+    progress_keys = progress_keys_for(current)
     customer.fields_filled_count = sum(1 for k in current if k in progress_keys)
     if "mobile" in cleaned:
         customer.mobile_normalized = cleaned["mobile"]  # None when cleared
@@ -155,7 +155,7 @@ def create_prospect(
     """
     cleaned = clean_values({k: v for k, v in raw_values.items() if k != "location"})  # Location comes from GPS only
     if not any(k in cleaned for k in IDENTITY_KEYS):
-        raise InvalidValues({k: "enter at least Business Name, Promoter or Mobile" for k in IDENTITY_KEYS})
+        raise InvalidValues({k: "enter at least Business Name, POC or Mobile" for k in IDENTITY_KEYS})
 
     mobile = cleaned.get("mobile")
     target = resolve_duplicate(db, staff, mobile, on_duplicate, overwrite_customer_id)
