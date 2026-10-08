@@ -65,7 +65,10 @@ a {
 /* The phone frame. On phones it is the whole screen. */
 .app {
   width: 390px;
-  height: 844px;
+  /* A phone-sized frame, but never taller than the browser window (otherwise the top, with the
+     logo, is cut off on shorter screens). */
+  height: min(844px, calc(100vh - 24px));
+  height: min(844px, calc(100dvh - 24px));
   background: var(--ground);
   display: flex;
   flex-direction: column;
